@@ -7,25 +7,11 @@ import json
 import os.path
 import math
 
-client = OpenAI(organization = "org-OLj35i3NXxpSuuOGH1a1HxNm",
-                project = "proj_CMh1Q6JQg1AWoSBG35uF1gYU")
+client = OpenAI(organization = "xxx", project = "xxx")
 
 seed = 123456
 
 # given a single data point, "narrate" its feature values and feature names as a string
-
-'''
-def narrate_data(feature_names, feature_values):
-    if isinstance(feature_values, pd.Series):
-    #if type(feature_values) == pd.Series:
-        feature_values = feature_values.values
-    
-    output = ''   
-    for i in range(len(feature_names)):
-        if not (isinstance(feature_values[i], float) and math.isnan(feature_values[i])):  # Exclude NaNs
-            output += feature_names[i] + " " + str(feature_values[i]) + ", "
-    return output
-'''
 
 def narrate_data(feature_names, feature_values, case):
     if type(feature_values) == pd.Series:
@@ -50,17 +36,7 @@ def narrate_data(feature_names, feature_values, case):
     else:
         raise ValueError("Invalid case.")
 
-    
-'''
-def narrate_data(feature_names, feature_values):
-    if isinstance(feature_values, pd.Series):
-        feature_values = feature_values.values
-    
-    return f"What is {feature_values[0]} * {feature_values[1]}?"
-'''
-
 # construct system prompt
-# system prompt consists of task, input format, output format, and one example constructed from the first training example
 def construct_prompt(data_name, X_train, Y_train):
     match data_name:
         case "wine-red":
@@ -151,6 +127,7 @@ def create_batch_prediction(data_name, X_train, Y_train, X_test, gpt_model, fine
         }) + "\n")
     f.close()
 
+# code for combination of “Variable Order” and “Format”
 '''
 def create_batch_prediction(data_name, X_train, Y_train, X_test, gpt_model, fine_tuned, shuffle_test_cols=True, seed=123456):
     rng = np.random.default_rng(seed)
@@ -230,7 +207,8 @@ def create_finetune_training(data_name, X_train, Y_train):
             }]
         }) + "\n")
     f.close()
-    
+
+# code for combination of “Variable Order” and “Format”
 '''
 def create_finetune_training(data_name, X_train, Y_train, seed=123456):
     rng = np.random.default_rng(seed)
@@ -254,7 +232,7 @@ def create_finetune_training(data_name, X_train, Y_train, seed=123456):
 '''
 
 # launch fine-tune job
-# this should only be ran once for each dataset!!!
+# this should only be ran once for each dataset
 def launch_finetune_job(data_name):
     f = open("finetune_training_data/" + data_name + ".jsonl", "rb")
     
@@ -276,10 +254,11 @@ def launch_finetune_job(data_name):
     # create fine-tuning job
     client.fine_tuning.jobs.create(
         training_file = training_data_file.id,
-        # so far can only fine-tune 4o-mini. Fine-tune 4o is by request only
+        # Fine-tune 4o is by request only
         model="gpt-4o-2024-08-06"
     )
     '''
+  
 # read results from batch prediction generated file
 def read_results(file_obj):
     idx = []
@@ -387,8 +366,6 @@ if __name__ == "__main__":
                 else:
                     print("Shape mismatch with the raw prediction results.")
                 '''
-       
-            
                 
                 # predictions with fine-tuning
                 f_finetune = open("prediction_results/" + data_name + "_finetune.jsonl", "r")
@@ -400,31 +377,8 @@ if __name__ == "__main__":
                     print(f"LLM performance with fine-tuning on {data_name}: MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}")
                 else:
                     print("Shape mismatch with the fine-tuned prediction results.")
-                
-
-        case "6":
-            base_data = "synthetic_data_linear_exp_all_positive2_noexp" 
-            f_base = open("prediction_results/" + base_data + "_finetune.jsonl", "r")
-            pred_base = read_results(f_base)
-
-            for data_name in data_list:
-                if data_name == base_data:
-                    continue
-
-                f_finetune = open("prediction_results/" + data_name + "_finetune.jsonl", "r")
-                X, Y = read_data(data_name)
-                X_train, X_test, Y_train, Y_test = split_data(X, Y)
-                pred_finetune = read_results(f_finetune)
-        
-                if pred_finetune is not None and pred_finetune.shape[0] == X_test.shape[0]:
-                    prediction_diffs = np.abs(pred_finetune["Prediction"].values - pred_base["Prediction"].values)
-                    MAPC = np.mean(prediction_diffs)
-                    MAPC_std = np.std(prediction_diffs)
-                    MAPC_max = np.max(prediction_diffs)
-                    print(f"Prediction Change for {data_name}: Mean Absolute Prediction Change: {MAPC}, Std Dev of Abs Prediction Change: {MAPC_std}, Max Abs Prediction Change: {MAPC_max}")
-                else:
-                    print("Shape mismatch with the fine-tuned prediction results.")
         
         case _:
             print("Invalid input. Exiting.")
+
             exit()
