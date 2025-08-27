@@ -152,33 +152,6 @@ def generate_outliers(r, n, seed=12345):
         outlier_values.append(np.random.randint(min_value, max_value + 1, size=n))
     return outlier_values
 
-'''
-# true outliers based on SD
-def add_outliers(data, outlier_percentage, std_multiplier=3, beta=None):
-    n_outliers = int(len(data) * outlier_percentage / 100)
-    outlier_indices = np.random.choice(len(data), n_outliers, replace=False)
-    
-    data_array = data.values
-    data_with_outliers = data_array.copy()
-    
-    n_features = data_array.shape[1] - 1
-    
-    # Add outliers
-    for idx in outlier_indices:
-        for col in range(n_features):  
-            mean = np.mean(data_array[:, col])
-            std = np.std(data_array[:, col])
-            direction = np.random.choice([-1, 1])
-            data_with_outliers[idx, col] = mean + (direction * std_multiplier * std)
-        
-        X_row = data_with_outliers[idx, :n_features]
-        data_with_outliers[idx, -1] = np.dot(X_row, beta) + np.random.normal(0, 0.1)
-    
-    col_names = [f"X{i}" for i in range(n_features)] + ["Y"]
-    result_df = pd.DataFrame(data_with_outliers, columns=col_names)
-    
-    return result_df
-'''
 
 def add_true_outliers(data, outlier_percentage, std_multiplier=3):
     n_outliers = int(len(data) * outlier_percentage / 100)
@@ -260,9 +233,8 @@ def generate_combination(n,p, seed=12345):
     #digits = ['fixed_digit', 'random_digit']
     #digits = '14_digits'
     #outlier_percentages = [0.5, 1, 5]
-    column_order = 'shuffle'
-    column_name = 'diff_name4'
-
+    #column_order = 'shuffle'
+    #column_name = 'diff_name4'
 
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, p)
@@ -270,28 +242,16 @@ def generate_combination(n,p, seed=12345):
     # [0.92961609 0.31637555 0.18391881 0.20456028 0.56772503 0.5955447 0.96451452 0.6531771  0.74890664 0.65356987]
     #outlier_values = generate_outliers(4,n)
     
-    #print(outlier_values)
-
     for dgp in dgps:
         for distribution in distributions:
-                data, col_names = simulate_data(n,p,dgp=dgp, distribution=distribution, sign_control=sign_controls,scale=None, outlier_values= None, digit=None, beta=beta, column_order=None, column_name=column_name)
-
-                print(data)
+                data, col_names = simulate_data(n,p,dgp=dgp, distribution=distribution, sign_control=sign_controls,scale=None, outlier_values= None, digit=None, beta=beta, column_order=None, column_name=column_name）
 
                 '''
                 for outlier_pct in outlier_percentages:
                     data_with_outliers = add_outliers(data, outlier_pct)
                     outlier_filename = f"data/synthetic_data_{dgp}_{distribution}_{sign_control}_Realoutliers_{outlier_pct}.csv"
                     data_with_outliers.to_csv(outlier_filename, index=False)
-                        
-
-                    print(f"\nGenerated data with {outlier_pct}% outliers saved to: {outlier_filename}")
                 '''
-
-
-
-
-    
                 file_name = f"data/synthetic_data_{dgp}_{distribution}_{sign_controls}_{column_name}.csv"
                 print(file_name)
                 data.to_csv(file_name, header=col_names, index=False)
