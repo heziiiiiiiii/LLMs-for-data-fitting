@@ -623,9 +623,6 @@ def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
     print(f"manifest.csv saved to: {out / 'manifest.csv'}")
 
 
-# -------------
-# CLI
-# -------------
 if __name__ == "__main__":
     # Force dataset_0000 to use beta drawn with RNG seed 12345
     '''
