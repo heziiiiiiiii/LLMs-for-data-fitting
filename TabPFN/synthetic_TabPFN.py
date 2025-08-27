@@ -239,7 +239,6 @@ def generate_combination(n,p, seed=12345):
 
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, p)
-    print(beta)
     # [0.92961609 0.31637555 0.18391881 0.20456028 0.56772503 0.5955447 0.96451452 0.6531771  0.74890664 0.65356987]
     #outlier_values = generate_outliers(4,n)
     
@@ -254,7 +253,6 @@ def generate_combination(n,p, seed=12345):
                     data_with_outliers.to_csv(outlier_filename, index=False)
                 '''
                 file_name = f"data/synthetic_data_{dgp}_{distribution}_{sign_controls}_{column_name}.csv"
-                print(file_name)
                 data.to_csv(file_name, header=col_names, index=False)
                 print(f"Generated and saved: {file_name}")
 
