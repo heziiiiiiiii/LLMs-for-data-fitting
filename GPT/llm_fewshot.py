@@ -371,7 +371,7 @@ if __name__ == "__main__":
     k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
 
     # task should generally be performed in the order of 1 to 5
-    task = input("Enter Task. \n1: launch batch prediction job \n2: launch fine-tuning job \n3: launch batch prediction job with fine-tuned model \n4: process batch prediction results \n5: report performance \n")
+    task = input("Enter Task. \n1: launch batch prediction job \n4: process batch prediction results \n5: report performance \n")
     match task:
         case "1":
             '''
