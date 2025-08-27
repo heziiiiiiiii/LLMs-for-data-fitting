@@ -9,12 +9,12 @@ open-weight general-purpose LLMs: Llama-3-8B-instruct
 
 special purpose tabular foundation model: TabPFN
 
-## GPT Models
+### GPT Models
 llm.py: Core GPT implementation adapted for tabular data prediction
 
 llm_fewshot.py: In-context learning experiments with various data representations
 
-## Llama Models
+### Llama Models
 
 llama3_prediction.py: Llama3 prediction on tabular data
 
@@ -22,7 +22,7 @@ attention_analysis_main.py: Detailed attention mechanism analysis revealing posi
 
 plot.ipynb: Visualization of attention patterns 
 
-## TabPFN (Tabular Foundation Model)
+### TabPFN (Tabular Foundation Model)
 
 tabpfn.ipynb: Baseline TabPFN performance evaluation
 
