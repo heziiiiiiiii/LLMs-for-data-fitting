@@ -11,7 +11,7 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
-# Convert features to text format
+# convert features to text format
 def narrate_data(feature_names, feature_values):
     if isinstance(feature_values, pd.Series):
         feature_values = feature_values.values
@@ -22,7 +22,7 @@ def narrate_data(feature_names, feature_values):
     return output
 
 # Classify tokens into different categories
-def classify_tokens_final(tokens, attention_values):
+def classify_tokens_final(tokens, attention_values)
     categories = {
         "special_tokens": [],
         "task_description": [],
@@ -65,7 +65,7 @@ def classify_tokens_final(tokens, attention_values):
             categories["special_tokens"].append((i, tok, float(attn)))
             continue
         
-        # Task Description
+        # Task Description (first chunk after system) 
         if 6 <= i <= 66:
             categories["task_description"].append((i, tok, float(attn)))
             continue
@@ -107,9 +107,9 @@ def remove_leading_single_digits(token_attention_list):
     Removes a token (pos, token, attn) if:
       - token is a single-digit number
       - next token is also a single-digit number
-      - their positions differ by exactly 2 (i.e., next_pos = curr_pos + 2)
+      - their positions differ by exactly 2 (next_pos = curr_pos + 2)
     """
-    token_attention_list = [t for t in token_attention_list if 72 <= t[0] <= 2879]
+    token_attention_list = [t for t in token_attention_list if 72 <= t[0] <= 1465]
     cleaned = []
     i = 0
     while i < len(token_attention_list):
@@ -131,17 +131,10 @@ def remove_leading_single_digits(token_attention_list):
 
     return cleaned
 
-
 def extract_x0_to_x9_values_attention(filtered_tokens):
     """
-    Groups consecutive tokens into X0_value to X9_value repeatedly,
+    Groups tokens into X0_value to X9_value repeatedly,
     summing their attention scores. Skips groups with only 1 token.
-
-    Args:
-        filtered_tokens (List[Tuple[int, str, float]]): List of (position, token, attention)
-
-    Returns:
-        List[Tuple[str, float]]: List of (Xn_value, total_attention) with wrap-around every 10
     """
     if not filtered_tokens:
         return []
@@ -164,13 +157,24 @@ def extract_x0_to_x9_values_attention(filtered_tokens):
                 x_counter = (x_counter + 1) % 10
             current_group = [filtered_tokens[i]]
 
-    # Handle final group
+    # final group
     if len(current_group) > 1:
         total_attention = sum(attn for _, _, attn in current_group)
         results.append((f"X{x_counter}_value", total_attention))
 
     return results
 
+# Sums attention scores for each Xn_value label across multiple chunks.
+def sum_xn_values(xn_attention_list):
+    total_by_label = defaultdict(float)
+    for label, attn in xn_attention_list:
+        total_by_label[label] += attn
+
+    # Sort by X0_value to X9_value
+    sorted_result = sorted(total_by_label.items(), key=lambda x: int(x[0][1]))
+    return sorted_result
+
+# code for shuffle column order
 '''
 def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
     """
@@ -261,7 +265,6 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         all_attentions = []     # list of [num_heads, src_len] per generated step (CPU tensors)
         generated_tokens = []
 
-        # ---- resolve eot/eos
         eot_token_str = "<|eot_id|>"
         try:
             eot_id = tokenizer.convert_tokens_to_ids(eot_token_str) or -1
@@ -311,12 +314,12 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                 generated_ids = torch.cat([generated_ids, next_token], dim=-1)
                 attention_mask = torch.cat([attention_mask, torch.ones_like(next_token)], dim=-1)
 
-                # last layer attention this step: [num_heads, 1, src_len] -> take that single row
+                # last layer attention this step: [num_heads, 1, src_len], take that single row
                 # NOTE: outputs.attentions is a tuple (num_layers). Index 0 is batch dim for many HF models.
                 attn_last_layer = outputs.attentions[-1][0]         # [num_heads, 1, src_len]
                 all_attentions.append(attn_last_layer[:, -1, :].to(torch.float32).cpu())
 
-                # free GPU refs ASAP
+                # free GPU 
                 del outputs, attn_last_layer
                 torch.cuda.empty_cache()
 
@@ -324,13 +327,12 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                 if stop_now:
                     break
 
-        # Build generation info (even if empty)
+        # Build generation info
         generated_text = "".join(generated_tokens) if generated_tokens else ""
         gen_info = {
             "datapoint_idx": data_idx,
             "num_generated": len(generated_tokens),
             "generated_text": generated_text,
-            # Raw tokens as a single string for CSV (keep as-is; you can parse later)
             "generated_tokens": "|".join(generated_tokens) if generated_tokens else ""
         }
 
