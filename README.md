@@ -5,7 +5,7 @@ We use three types models:
 
 close-weight general-purpose LLMs: GPT40-mini
 
-p[en-weight general-purpose LLMs: Llama-3-8B-instruct
+open-weight general-purpose LLMs: Llama-3-8B-instruct
 
 special purpose tabular foundation model: TabPFN
 
@@ -29,3 +29,9 @@ tabpfn.ipynb: Baseline TabPFN performance evaluation
 synthetic_TabPFN.py: generate
 
 results_summary.ipynb: Cross-model robustness comparison
+
+
+
+## Dataset Info
+
+Synthetic datasets (via synthetic_data.py): linear data-generation process
