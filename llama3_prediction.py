@@ -72,7 +72,7 @@ def get_llama3_prediction(data_name, X_train, Y_train, feature_names, new_data, 
             **inputs,
             max_new_tokens=20,      # Enough for a number
             do_sample=False,        # Deterministic generation
-            temperature=0.01,       # Very low temperature
+            temperature=0.01,       # temperature > 0 by llama
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
@@ -168,15 +168,10 @@ if __name__ == "__main__":
     k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
 
     X, Y = read_data(data_name)
-    #X = X.iloc[:100, :]
-    #Y = Y[:100]
-    if X is None or Y is None:
-        exit()
-
     X_train, X_test, Y_train, Y_test = split_data(X, Y)
 
     model_name = "meta-llama/Meta-Llama-3-8B-Instruct"  
-    cache_dir = "/users/4/liu03021/llama3_3" 
+    cache_dir = "xxx" # model path
 
     print(f"Loading LLaMA-3 model: {model_name}")
     
