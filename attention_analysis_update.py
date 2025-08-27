@@ -11,8 +11,8 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
+# convert features to text format
 def narrate_data(feature_names, feature_values):
-    """Convert features to text format"""
     if isinstance(feature_values, pd.Series):
         feature_values = feature_values.values
     
@@ -21,8 +21,8 @@ def narrate_data(feature_names, feature_values):
         output += feature_names[i] + " " + str(feature_values[i]) + ", "
     return output
 
-def classify_tokens_final(tokens, attention_values):
-    """Classify tokens into different categories"""
+# Classify tokens into different categories
+def classify_tokens_final(tokens, attention_values)
     categories = {
         "special_tokens": [],
         "task_description": [],
@@ -133,7 +133,7 @@ def remove_leading_single_digits(token_attention_list):
 
 def extract_x0_to_x9_values_attention(filtered_tokens):
     """
-    Groups consecutive tokens into X0_value to X9_value repeatedly,
+    Groups tokens into X0_value to X9_value repeatedly,
     summing their attention scores. Skips groups with only 1 token.
     """
     if not filtered_tokens:
@@ -164,10 +164,8 @@ def extract_x0_to_x9_values_attention(filtered_tokens):
 
     return results
 
+# Sums attention scores for each Xn_value label across multiple chunks.
 def sum_xn_values(xn_attention_list):
-    """
-    Sums attention scores for each Xn_value label across multiple chunks.
-    """
     total_by_label = defaultdict(float)
     for label, attn in xn_attention_list:
         total_by_label[label] += attn
@@ -180,9 +178,8 @@ def sum_xn_values(xn_attention_list):
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=10):
     """
     Analyze attention for a single datapoint.
-      - Generate until <|eot_id|> (or eos), not a fixed length.
-      - Compute ave_attention over the FIXED INPUT SPAN by averaging raw (head-averaged) attentions across generated steps.
-      - Use ave_attention (row/name/value).
+      - Generate until <|eot_id|>, not a fixed length.
+      - Compute ave_attention over the input length by averaging raw (head-averaged) attentions across generated steps.
     """
     try:
         new_data = X_test.iloc[data_idx]
@@ -211,7 +208,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
         generated_ids = input_ids.clone()
         all_attentions = []      # list of [num_heads, src_len] per generated step
-        generated_tokens = []    # list of decoded pieces for each generated token (may include specials)
+        generated_tokens = []    # list of decoded pieces for each generated token 
 
         # eot/eos
         eot_token_str = "<|eot_id|>"
@@ -252,7 +249,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                 # Append the token
                 generated_ids = torch.cat([generated_ids, next_token], dim=-1)
 
-                # Last layer attention for this step: [num_heads, seq_len, seq_len] -> take last query row
+                # Last layer attention for this step: [num_heads, seq_len, seq_len], take last query row
                 attn_last_layer = outputs.attentions[-1][0]   # [num_heads, seq_len, seq_len]
                 all_attentions.append(attn_last_layer[:, -1, :].to(torch.float32).cpu())  # [num_heads, src_len]
 
@@ -273,7 +270,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         if len(all_attentions) == 0:
             return [], [], [], gen_info
 
-        # Length-normalized average attention over the FIXED INPUT SPAN 
+        # Length-normalized average attention over the length
         input_length = len(tokenizer.convert_ids_to_tokens(input_ids[0]))
         per_step_raw = [attn.mean(dim=0)[:input_length] for attn in all_attentions]   # each [input_length]
         ave_attention_tensor = torch.stack(per_step_raw, dim=0).mean(dim=0)           # [input_length]
@@ -395,10 +392,8 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         }
         return [], [], [], gen_info
 
-    
+# attention analysis on 1000 data points with 3-level analysis: row, name, and feature value
 def run_analysis_1000_datapoints():
-    """Run attention analysis on 1000 data points with 3-level analysis: row, name, and feature value.
-       Also saves generated tokens per datapoint."""
     features = X_train.columns
     n_datapoints = min(1000, len(X_test))
     print(f"Analyzing {n_datapoints} data points...")
@@ -435,108 +430,44 @@ def run_analysis_1000_datapoints():
     value_df = pd.DataFrame(all_value_results)
     gen_df  = pd.DataFrame(all_generations)   
 
-    print("\n" + "="*90)
-    print("THREE-LEVEL ATTENTION ANALYSIS RESULTS")
-    print("="*90)
-    
-    # === LEVEL 1: ROW-LEVEL ANALYSIS ===
+    # ROW-LEVEL ANALYSIS 
     if not row_df.empty:
         row_summary = row_df.groupby('group')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
         
-        print("\n LEVEL 1: ROW-LEVEL ATTENTION (Original Grouped Analysis)")
-        print("-" * 70)
         print(row_summary)
         
-        print(f"\n Row-level insights:")
-        top_row_group = row_summary['mean'].idxmax()
-        print(f"  • Most attended row group: {top_row_group} ({row_summary.loc[top_row_group, 'mean']:.6f})")
-        print(f"  • Total row groups analyzed: {len(row_summary)}")
-        
         # Save row-level results
-        row_df.to_csv('row_level_attention_results2.csv', index=False)
-        row_summary.to_csv('row_level_attention_summary2.csv')
+        row_df.to_csv(f"{data_name}_fewshot{k}_row_level_attention_results.csv", index=False)
+        row_summary.to_csv(f"{data_name}_fewshot{k}_row_level_attention_summary.csv")
     
-    # === LEVEL 2: NAME-LEVEL ANALYSIS ===
+    # NAME-LEVEL ANALYSIS 
     if not name_df.empty:
         name_summary = name_df.groupby('feature')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
         
-        print(f"\n  LEVEL 2: NAME-LEVEL ATTENTION (Column Names)")
-        print("-" * 70)
         print(name_summary)
         
-        print(f"\n Name-level insights:")
-        top_name_feature = name_summary['mean'].idxmax()
-        print(f"  • Most attended feature name: {top_name_feature} ({name_summary.loc[top_name_feature, 'mean']:.6f})")
-        avg_name_attention = name_summary['mean'].mean()
-        print(f"  • Average attention across all names: {avg_name_attention:.6f}")
-        
-        # Feature value range analysis for name-level
-        print(f"\n Feature value ranges for name-level attention:")
-        for feature in name_summary.index:
-            feature_data = name_df[name_df['feature'] == feature]
-            if len(feature_data) > 0:
-                min_val = feature_data['feature_value'].min()
-                max_val = feature_data['feature_value'].max()
-                mean_val = feature_data['feature_value'].mean()
-                print(f"  • {feature}: value range [{min_val:.3f}, {max_val:.3f}], mean={mean_val:.3f}")
-        
         # Save name-level results
-        name_df.to_csv('name_level_attention_results2.csv', index=False)
-        name_summary.to_csv('name_level_attention_summary2.csv')
+        name_df.to_csv(f"{data_name}_fewshot{k}_name_level_attention_results.csv", index=False)
+        name_summary.to_csv(f"{data_name}_fewshot{k}_name_level_attention_summary.csv")
     
-    # === LEVEL 3: FEATURE VALUE-LEVEL ANALYSIS ===
+    # FEATURE VALUE-LEVEL ANALYSIS 
     if not value_df.empty:
         value_summary = value_df.groupby('feature')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
-        
-        print(f"\n LEVEL 3: FEATURE VALUE-LEVEL ATTENTION (Actual Values)")
-        print("-" * 70)
+
         print(value_summary)
         
-        print(f"\n Value-level insights:")
-        top_value_feature = value_summary['mean'].idxmax()
-        print(f"  • Most attended feature value: {top_value_feature} ({value_summary.loc[top_value_feature, 'mean']:.6f})")
-        avg_value_attention = value_summary['mean'].mean()
-        print(f"  • Average attention across all values: {avg_value_attention:.6f}")
-        
-        # Correlation analysis between feature values and attention
-        print(f"\n Value-Attention Correlations:")
-        for feature in value_summary.index:
-            feature_data = value_df[value_df['feature'] == feature]
-            if len(feature_data) > 1:
-                correlation = feature_data['feature_value'].corr(feature_data['attention'])
-                print(f"  • {feature}: r = {correlation:.4f}")
-        
-        # Top attention cases with actual values
-        print(f"\n Top attention cases (Feature Value Level):")
-        top_cases = value_df.nlargest(5, 'attention')
-        for _, case in top_cases.iterrows():
-            print(f"  • Data {case['datapoint_idx']}: {case['feature']}={case['feature_value']:.3f} → attention={case['attention']:.6f}")
-        
         # Save value-level results
-        value_df.to_csv('value_level_attention_results2.csv', index=False)
-        value_summary.to_csv('value_level_attention_summary2.csv')
+        value_df.to_csv(f"{data_name}_fewshot{k}_value_level_attention_results.csv", index=False)
+        value_summary.to_csv(f"{data_name}_fewshot{k}_value_level_attention_summary.csv")
         
-    # NEW: save generations (always useful even when attention tables are empty)
-    gen_df.to_csv('generated_outputs2.csv', index=False)
-    
-    
-    # === SAVE ALL RESULTS ===
-    print(f"\n FILES SAVED:")
-    print(f"   Row Level:")
-    print(f"    - row_level_attention_results2.csv")
-    print(f"    - row_level_attention_summary2.csv")
-    print(f"   Name Level:")
-    print(f"    - name_level_attention_results2.csv")
-    print(f"    - name_level_attention_summary2.csv")
-    print(f"   Value Level:")
-    print(f"    - value_level_attention_results2.csv")
-    print(f"    - value_level_attention_summary2.csv")
+    # save generations 
+    gen_df.to_csv(f"{data_name}_fewshot{k}_generated_outputs.csv", index=False)
     
     return (row_df, name_df, value_df, row_summary, name_summary, value_summary, gen_df)
 
@@ -545,7 +476,7 @@ if __name__ == "__main__":
     
     # Model Setup
     model_name = "meta-llama/Meta-Llama-3-8B-Instruct"  
-    cache_dir = "/users/4/liu03021/llama3_3" 
+    cache_dir = "xxx" # model path
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True, cache_dir=cache_dir)
     model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=True, cache_dir=cache_dir,         torch_dtype="auto", device_map="auto")
