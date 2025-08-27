@@ -11,8 +11,8 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
+# Convert features to text format
 def narrate_data(feature_names, feature_values):
-    """Convert features to text format"""
     if isinstance(feature_values, pd.Series):
         feature_values = feature_values.values
     
@@ -21,8 +21,8 @@ def narrate_data(feature_names, feature_values):
         output += feature_names[i] + " " + str(feature_values[i]) + ", "
     return output
 
+# Classify tokens into different categories
 def classify_tokens_final(tokens, attention_values):
-    """Classify tokens into different categories"""
     categories = {
         "special_tokens": [],
         "task_description": [],
@@ -36,7 +36,6 @@ def classify_tokens_final(tokens, attention_values):
     assistant_ranges = []
     current_start = None
     
-    # Helper: Determine if "." is part of a floating-point number
     def is_float_piece(tokens, i):
         if tokens[i] != ".":
             return False
@@ -46,12 +45,10 @@ def classify_tokens_final(tokens, attention_values):
             return prev.isdigit() and next.isdigit()
         return False
     
-    # Helper: Check if a token is a complete number
     def is_number(token):
         token = token.lower()
         return bool(re.fullmatch(r"[-+]?(?:\d*\.\d+|\d+)(?:e[-+]?\d+)?", token))
     
-    # Find assistant output sections
     for i, token in enumerate(tokens):
         if token == "assistant":
             current_start = i
@@ -59,7 +56,7 @@ def classify_tokens_final(tokens, attention_values):
             assistant_ranges.append((current_start, i))
             current_start = None
     
-    # Main token loop
+    # Main loop
     for i, (tok, attn) in enumerate(zip(tokens, attention_values)):
         clean_tok = tok.strip().lower()
         
@@ -68,7 +65,7 @@ def classify_tokens_final(tokens, attention_values):
             categories["special_tokens"].append((i, tok, float(attn)))
             continue
         
-        # Task Description (first chunk after system) 
+        # Task Description
         if 6 <= i <= 66:
             categories["task_description"].append((i, tok, float(attn)))
             continue
@@ -78,7 +75,7 @@ def classify_tokens_final(tokens, attention_values):
             categories["example_instruction"].append((i, tok, float(attn)))
             continue
         
-        # Column Names: 'ĠX', number, 'Ġ'
+        # Column Names
         if tok == "ĠX" and i + 2 < len(tokens) and tokens[i + 2] == "Ġ":
             categories["column_names"].append((i, tok, float(attn)))
             categories["column_names"].append((i+1, tokens[i+1], float(attention_values[i+1])))
@@ -111,12 +108,6 @@ def remove_leading_single_digits(token_attention_list):
       - token is a single-digit number
       - next token is also a single-digit number
       - their positions differ by exactly 2 (i.e., next_pos = curr_pos + 2)
-
-    Args:
-        token_attention_list (List[Tuple[int, str, float]]): list of (position, token, attention)
-
-    Returns:
-        List[Tuple[int, str, float]]: cleaned list with some tokens removed
     """
     token_attention_list = [t for t in token_attention_list if 72 <= t[0] <= 2879]
     cleaned = []
@@ -140,7 +131,7 @@ def remove_leading_single_digits(token_attention_list):
 
     return cleaned
 
-'''
+
 def extract_x0_to_x9_values_attention(filtered_tokens):
     """
     Groups consecutive tokens into X0_value to X9_value repeatedly,
@@ -179,8 +170,8 @@ def extract_x0_to_x9_values_attention(filtered_tokens):
         results.append((f"X{x_counter}_value", total_attention))
 
     return results
-'''
 
+'''
 def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
     """
     Groups consecutive tokens into X0_value, X1_value, ..., based on actual feature name order,
@@ -215,16 +206,11 @@ def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
         results.append((f"{feature_name}_value", total_attention))
 
     return results
+'''
 
 def sum_xn_values(xn_attention_list):
     """
     Sums attention scores for each Xn_value label across multiple chunks.
-
-    Args:
-        xn_attention_list (List[Tuple[str, float]]): e.g., [("X0_value", 0.001), ("X1_value", 0.002), ...]
-
-    Returns:
-        List[Tuple[str, float]]: Total attention per X0_value to X9_value
     """
     total_by_label = defaultdict(float)
     for label, attn in xn_attention_list:
@@ -236,15 +222,6 @@ def sum_xn_values(xn_attention_list):
 
 
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=20):
-    """
-    Analyze attention for a single datapoint.
-
-    Changes:
-      - Generate until <|eot_id|> (or eos), not a fixed length.
-      - Compute ave_attention over the FIXED INPUT SPAN by averaging raw (head-averaged) attentions across generated steps.
-      - Use ave_attention everywhere (row/name/value).
-      - NEW: return generation info (tokens, text, num_generated).
-    """
     try:
         new_data = X_test.iloc[data_idx]
 
