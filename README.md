@@ -28,15 +28,15 @@ Below are key resources and documentation used for implementation.
 - `plot.ipynb`: Visualizations of attention patterns.
 
 ### TabPFN (`TabPFN/`)
-- `synthetic_TabPFN.py`: Code for creating synthetic datasets.
+- `synthetic_TabPFN.py`: Code to simulate synthetic datasets.
 - `tabpfn.ipynb`: In-context learning (ICL) experiments using TabPFN.
-- `results_summary.ipynb`: Code for aggregating results.
+- `results_summary.ipynb`: Code to aggregate results.
 
 ### Tabular Supervised Learning Techniques
 - `tabular.py` : Traditional tabular supervised learning techniques (e.g., Linear Regression, Lasso, SVR, Random Forest, k-NN, MLP).
 
 ### Utilities
-- `synthetic_data.py`: Code for creating synthetic datasets.
+- `synthetic_data.py`: Code to simulate synthetic datasets.
 - `utility.py` : Data loading and evaluation utilities.
 
 
