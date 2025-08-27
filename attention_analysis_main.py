@@ -348,7 +348,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
 
         # LEVEL 2: VALUE-LEVEL
         filtered = remove_leading_single_digits(grouped_result['input_numbers'])
-        feature_result = extract_x0_to_x9_values_attention(filtered)
+        feature_result = extract_x0_to_x9_values_attention(filtered)     # change to extract_values_attention_by_feature_name(filtered, features) for shuffled column order data
         feature_summary = sum_xn_values(feature_result)
 
         value_level_results = []
