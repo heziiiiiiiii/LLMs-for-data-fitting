@@ -18,21 +18,22 @@ Below are key resources and documentation used for implementation.
 ## Code Structure
 
 ### GPT Models (`GPT/`)
-- `llm.py`: Fine-tuning experiments using GPT4o-mini on synthetic datasets.
-- `llm_fewshot.py`: Few-shot experiments (ICL) using GPT4o-mini on synthetic datasets.
+- `llm.py`: Supervised fine-tuning experiments using GPT4o-mini.
+- `llm_fewshot.py`: In-context learning (ICL) experiments using GPT4o-mini.
 
 ### LLaMA Models (`Llama/`)
-- `llama3_prediction.py`: Few-shot experiments (ICL) using LLaMA-3-8B-Instruct on synthetic datasets.
-- `attention_analysis_main.py`: Attention mechanism analysis.
+- `llama3_prediction.py`: In-context learning (ICL) experiments using LLaMA-3-8B-Instruct.
+- `attention_analysis_main.py`: Attention mechanism analysis for ICL10.
+- `attention_analysis_fewshot20.py`: Attention mechanism analysis for ICL20.
 - `plot.ipynb`: Visualizations of attention patterns.
 
 ### TabPFN (`TabPFN/`)
 - `synthetic_TabPFN.py`: Code for creating synthetic datasets.
-- `tabpfn.ipynb`: Few-shot experiments (ICL) using TabPFN on synthetic datasets.
+- `tabpfn.ipynb`: In-context learning (ICL) experiments using TabPFN.
 - `results_summary.ipynb`: Code for aggregating results.
 
 ### Tabular Supervised Learning Techniques
-- `tabular.py` : Traditional tabular supervised learning techniques (e.g., Linear Regression, Lasso, SVR, Random Forest, k-NN, MLP) on synthetic datasets.
+- `tabular.py` : Traditional tabular supervised learning techniques (e.g., Linear Regression, Lasso, SVR, Random Forest, k-NN, MLP).
 
 ### Utilities
 - `synthetic_data.py`: Code for creating synthetic datasets.
