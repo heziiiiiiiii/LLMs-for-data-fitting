@@ -10,20 +10,7 @@ import os.path
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-client = OpenAI(organization = "org-OLj35i3NXxpSuuOGH1a1HxNm",
-                project = "proj_CMh1Q6JQg1AWoSBG35uF1gYU")
-
-'''
-# given a single data point, "narrate" its feature values and feature names as a string
-def narrate_data(feature_names, feature_values):
-    if type(feature_values) == pd.Series:
-        feature_values = feature_values.values
-    
-    output = ''    
-    for i in range(len(feature_names)):
-        output += feature_names[i] + " " + str(feature_values[i]) + ", "
-    return output
-'''
+# client = OpenAI(organization = "xxx", project = "xxx")
 
 # given a single data point, "narrate" its feature values and feature names as a string
 def narrate_data(feature_names, feature_values, case):
@@ -50,7 +37,7 @@ def narrate_data(feature_names, feature_values, case):
         raise ValueError("Invalid case.")
 
 # construct system prompt
-# system prompt consists of task, input format, output format, and one example constructed from the first training example
+# system prompt consists of task, input format, output format, and examples constructed from the first training example
 
 def construct_prompt(data_name, X_train, Y_train, k):
     match data_name:
@@ -89,9 +76,10 @@ def construct_prompt(data_name, X_train, Y_train, k):
             print("Invalid data name.")
             exit()
 
-    return context + input_format + output_format + examples + prompt
-    #return context + input_format + output_format + examples
+    #return context + input_format + output_format + examples + prompt
+    return context + input_format + output_format + examples
 
+# code for combination of “Variable Order” and “Format”
 '''
 def construct_prompt(data_name, X_train, Y_train, k):
     match data_name:
@@ -184,6 +172,7 @@ def create_batch_prediction(data_name, X_train, Y_train, X_test, gpt_model, fine
     file_name = f"batch_prediction_jobs/" + data_name + "_"+str(k)+ "_fewshot_raw.jsonl"
     logging.info(f"Batch file created: {file_name}")
 
+# code for combination of “Variable Order” and “Format”
 '''
 def create_batch_prediction(data_name, X_train, Y_train, X_test, gpt_model, fine_tuned, k, shuffle_test_cols=True, seed=123456):
     rng = np.random.default_rng(seed)
@@ -223,7 +212,7 @@ def create_batch_prediction(data_name, X_train, Y_train, X_test, gpt_model, fine
 '''
 
 # launch batch prediction job
-# this should only be ran once for each dataset!!!
+# this should only be ran once for each dataset
 
 def launch_batch_prediction(data_name, fine_tuned,k):
     if fine_tuned:
@@ -246,8 +235,9 @@ def launch_batch_prediction(data_name, fine_tuned,k):
             "description": "Batch prediction for " + data_name + " with fine-tuning " + str(fine_tuned)
         } 
     )
-'''
 
+#automation
+'''
 def launch_batch_prediction(data_name, k, fine_tuned=False):
     file_name = f"batch_prediction_jobs/{data_name}_{k}_{'fewshot_finetune' if fine_tuned else 'fewshot_raw'}.jsonl"
     if not os.path.isfile(file_name):
@@ -270,6 +260,7 @@ def launch_batch_prediction(data_name, k, fine_tuned=False):
             logging.error(f"Error launching batch prediction: {e}")
             raise
 '''
+
 # read results from batch prediction generated file
 def read_results(file_obj):
     idx = []
@@ -347,6 +338,7 @@ def retrieve_and_save_batch_results(batch_id, data_name, k, fine_tuned=False):
         f.write(result_file_content.text)
     print(f"Saved {result_type} results for {data_name} to {file_path}.")
 
+# automation
 '''
 def main():
     #relationship_type = input("Enter relationship type (e.g., 'linear', 'square', 'exp', etc.): ")
@@ -432,29 +424,6 @@ if __name__ == "__main__":
                     print(f"LLM performance on fewshot k={k} on {data_name}: MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}")
                 else:
                     print("Shape mismatch with the raw prediction results.")
-
-        case "6":
-            base_data = "synthetic_data_linear_exp_all_positive2" 
-            f_base = open("prediction_results/" + base_data + "_"+str(k)+ "_fewshot_raw.jsonl", "r")
-            pred_base = read_results(f_base)
-
-            for data_name in data_list:
-                if data_name == base_data:
-                    continue
-
-                f_finetune = open("prediction_results/" + data_name + "_"+str(k)+ "_fewshot_raw.jsonl", "r")
-                X, Y = read_data(data_name)
-                X_train, X_test, Y_train, Y_test = split_data(X, Y)
-                pred_finetune = read_results(f_finetune)
-        
-                if pred_finetune is not None and pred_finetune.shape[0] == X_test.shape[0]:
-                    prediction_diffs = np.abs(pred_finetune["Prediction"].values - pred_base["Prediction"].values)
-                    MAPC = np.mean(prediction_diffs)
-                    MAPC_std = np.std(prediction_diffs)
-                    MAPC_max = np.max(prediction_diffs)
-                    print(f"Prediction Change for {data_name}: Mean Absolute Prediction Change: {MAPC}, Std Dev of Abs Prediction Change: {MAPC_std}, Max Abs Prediction Change: {MAPC_max}")
-                else:
-                    print("Shape mismatch with the fine-tuned prediction results.")
         case _:
             print("Invalid input. Exiting.")
             exit()
