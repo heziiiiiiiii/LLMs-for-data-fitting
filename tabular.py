@@ -77,8 +77,7 @@ if __name__ == "__main__":
     results_df = pd.DataFrame(columns=["MAE", "RMSE", "MAPE", "best_paras"], index=["LinearRegression", "LassoRegression", "SVR", "RandomForest", "KNN", "MLP"])
     #relationship_type = input("Enter relationship type (e.g., 'linear', 'square', 'exp', etc.): ")
     #name = f"synthetic_data_{relationship_type}"
-    data_list =["synthetic_data_linear_exp_all_positive2_missing"]
-    #data_list = [name]
+    data_list = [name]
 
 
     '''
@@ -86,7 +85,7 @@ if __name__ == "__main__":
     distributions = ['exp', 'normal', 'uniform']
     sign_controls = ['all_positive']
     #digits = ['fixed_digit', 'random_digit']
-    outliers = ['fixed_outlier']
+    #outliers = ['fixed_outlier']
     data_list = []
     for dgp in dgps:
         for distribution in distributions:
@@ -99,8 +98,8 @@ if __name__ == "__main__":
     for data_name in data_list:
         print(f"Running tabular methods on {data_name}: ")
         X, Y = read_data(data_name)
-        #X_train, X_test, Y_train, Y_test = split_data(X, Y)
-        X_train, X_test, Y_train, Y_test = split_missing_data(X, Y)
+        X_train, X_test, Y_train, Y_test = split_data(X, Y)
+        #X_train, X_test, Y_train, Y_test = split_missing_data(X, Y)
         train_df = pd.concat([X_train, Y_train], axis=1)
         train_df = train_df.dropna()
         X_train = train_df.iloc[:, :-1]
@@ -116,7 +115,6 @@ if __name__ == "__main__":
             r = range_Y
         
         print(f"The range of is {r}")
-        #base_predictions = {}
         prediction = {}
         
         for model_name in ["LinearRegression", "LassoRegression", "SVR", "RandomForest", "KNN", "MLP"]:
@@ -132,17 +130,11 @@ if __name__ == "__main__":
             prediction[model_name] = Y_pred
             pred_df = pd.DataFrame({'Y_true': Y_test, 'Y_pred': Y_pred})
 
-            
+            '''
             if model_name == 'MLP':
                 pred_df.to_csv(f"prediction_results/{data_name}_simple_{model_name}_predictions.csv", index=False)
             else:
                 pred_df.to_csv(f"prediction_results/{data_name}_{model_name}_predictions.csv", index=False)
-            '''
-            if model_name == 'MLP':
-                base_preds = pd.read_csv(f"prediction_results/synthetic_data_linear_exp_all_positive2_simple_{model_name}_base_predictions.csv")
-            else:
-                base_preds = pd.read_csv(f"prediction_results/synthetic_data_linear_exp_all_positive2_{model_name}_base_predictions.csv")
-            
             Y_pred_base = base_preds['Y_pred'].values
 
             # Calculate prediction change metrics
@@ -155,13 +147,12 @@ if __name__ == "__main__":
 
             results_df.loc[model_name] = [MAE, RMSE, MAPE, str(best_params)]
             print(f"Model: {model_name}, MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}, Best Parameters: {best_params}")
-            #print(f"Model: {model_name}, MAPC: {MAPC}, MAPC_std: {MAPC_std}, MAPC_max: {MAPC_max}")
             
         file_name = f"performance_data/{data_name}_performance.csv"
         #prediction_file_name = f"performance_data/{data_name}_prediction_performance.csv"
         results_df.to_csv(file_name, index=True)
         #prediction_results_df.to_csv(prediction_file_name, index=True)
-            #print(f"Best parameters: {est.best_params_}")
+        #print(f"Best parameters: {est.best_params_}")
 
 
     
