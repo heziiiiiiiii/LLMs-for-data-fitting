@@ -16,6 +16,12 @@
 - `synthetic_TabPFN.py`: Script for generating synthetic datasets.
 - `results_summary.ipynb`: Aggregated results.
 
+### Tabular Supervised Learning Techniques
+- `tabular.py` : Runs traditional tabular supervised learning techniques (e.g., Linear Regression, Lasso, SVR, Random Forest, k-NN, MLP) on synthetic datasets.
+
+### Utilities
+- `synthetic_data.py`: Creates synthetic datasets used by all models  
+- `utility.py` : Data loading and evaluation utilities
 
 ## Dataset Info
 
