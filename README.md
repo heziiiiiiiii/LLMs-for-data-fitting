@@ -23,12 +23,4 @@
 - `synthetic_data.py`: Code for creating synthetic datasets.
 - `utility.py` : Data loading and evaluation utilities.
 
-## Dataset Info
 
-Synthetic datasets (via synthetic_data.py): linear data-generation process
-
-## Dataset Info
-
-- `synthetic_data.py`: Generates synthetic datasets with known functional forms (e.g., linear).
-- `tabular.py`: Utilities for formatting and cleaning tabular data.
-- `utility.py`: Common helper functions for prompt formatting, evaluation, etc.
