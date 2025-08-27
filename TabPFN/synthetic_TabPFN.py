@@ -91,7 +91,7 @@ def simulate_data(n, p, dgp, distribution, sign_control, scale, outlier_values, 
     elif dgp == 'linear':
         Y = X @ beta + np.random.normal(0, 0.1, n)
         #Y = X @ beta + 2*np.random.normal(0, 0.1, n)
-        #print(np.random.normal(0, 0.1, n))
+        print(np.random.normal(0, 0.1, n))
     elif dgp == 'sigmoid':
         Y = 1 / (1 + np.exp(-X @ beta)) + np.random.normal(0, 0.1, n)
     #elif dgp == 'sigmoid2':
@@ -112,7 +112,7 @@ def simulate_data(n, p, dgp, distribution, sign_control, scale, outlier_values, 
     elif digit == "14_digits":
         data = pd.DataFrame(np.column_stack((X, Y))).round(14)
     col_names = [f"X{i}" for i in range(p)] + ["Y"]
-    #print(len(col_names), data.shape[1])
+    print(len(col_names), data.shape[1])
 
     
     if column_order == "shuffle":
@@ -153,33 +153,6 @@ def generate_outliers(r, n, seed=12345):
         outlier_values.append(np.random.randint(min_value, max_value + 1, size=n))
     return outlier_values
 
-'''
-# true outliers based on SD
-def add_outliers(data, outlier_percentage, std_multiplier=3, beta=None):
-    n_outliers = int(len(data) * outlier_percentage / 100)
-    outlier_indices = np.random.choice(len(data), n_outliers, replace=False)
-    
-    data_array = data.values
-    data_with_outliers = data_array.copy()
-    
-    n_features = data_array.shape[1] - 1
-    
-    # Add outliers
-    for idx in outlier_indices:
-        for col in range(n_features):  
-            mean = np.mean(data_array[:, col])
-            std = np.std(data_array[:, col])
-            direction = np.random.choice([-1, 1])
-            data_with_outliers[idx, col] = mean + (direction * std_multiplier * std)
-        
-        X_row = data_with_outliers[idx, :n_features]
-        data_with_outliers[idx, -1] = np.dot(X_row, beta) + np.random.normal(0, 0.1)
-    
-    col_names = [f"X{i}" for i in range(n_features)] + ["Y"]
-    result_df = pd.DataFrame(data_with_outliers, columns=col_names)
-    
-    return result_df
-'''
 
 def add_true_outliers(data, outlier_percentage, std_multiplier=3):
     n_outliers = int(len(data) * outlier_percentage / 100)
@@ -264,108 +237,26 @@ def generate_combination(n,p, seed=12345):
     #column_order = 'shuffle'
     #column_name = 'diff_name4'
 
-
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, p)
     print(beta)
     # [0.92961609 0.31637555 0.18391881 0.20456028 0.56772503 0.5955447 0.96451452 0.6531771  0.74890664 0.65356987]
     #outlier_values = generate_outliers(4,n)
     
-    #print(outlier_values)
-
     for dgp in dgps:
         for distribution in distributions:
-                data, col_names = simulate_data(n,p,dgp=dgp, distribution=distribution, sign_control=sign_controls,scale=None, outlier_values= None, digit=None, beta=beta, column_order=None, column_name=None)
-
-                print(data)
+                data, col_names = simulate_data(n,p,dgp=dgp, distribution=distribution, sign_control=sign_controls,scale=None, outlier_values= None, digit=None, beta=beta, column_order=None, column_name=column_name）
 
                 '''
                 for outlier_pct in outlier_percentages:
                     data_with_outliers = add_outliers(data, outlier_pct)
                     outlier_filename = f"data/synthetic_data_{dgp}_{distribution}_{sign_control}_Realoutliers_{outlier_pct}.csv"
                     data_with_outliers.to_csv(outlier_filename, index=False)
-                        
-
-                    print(f"\nGenerated data with {outlier_pct}% outliers saved to: {outlier_filename}")
                 '''
-
-
-
-
-    
-                file_name = f"TabPFN_data/synthetic_data_{dgp}_{distribution}_{sign_controls}.csv"
+                file_name = f"data/synthetic_data_{dgp}_{distribution}_{sign_controls}_{column_name}.csv"
                 print(file_name)
                 data.to_csv(file_name, header=col_names, index=False)
                 print(f"Generated and saved: {file_name}")
-
-'''
-def generate_linear_exp_all_positive2_1000x_perbeta(
-    n=1000,
-    p=10,
-    n_datasets=1000,
-    out_dir="TabPFN_data/linear_exp_all_positive2",
-    base_seed=12344,
-):
-    """
-    Generates `n_datasets` datasets with:
-      - distribution='exp', sign_control='all_positive2'
-      - dgp='linear' with Gaussian noise (sigma=0.1)
-      - **different beta for each dataset** (saved to betas_per_dataset.csv)
-    Also writes:
-      - dataset_0000.csv ... dataset_0999.csv
-      - manifest.csv (index, seed, path)
-      - betas_per_dataset.csv (wide format: beta_0..beta_{p-1})
-    """
-    out = Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
-
-    rows = []
-    per_ds_betas = []
-
-    for i in range(n_datasets):
-        ds_seed = base_seed + i + 1
-        # Deterministic beta per dataset (depends only on base_seed and i)
-        beta_i = np.random.default_rng(base_seed + 1 + i).uniform(0.0, 1.0, size=p)
-
-        data, col_names = simulate_data(
-            n=n,
-            p=p,
-            dgp="linear",
-            distribution="exp",
-            sign_control="all_positive2",
-            scale=None,
-            outlier_values=None,
-            digit=None,
-            seed=ds_seed,
-            beta=beta_i,
-            column_order=None,
-            column_name=None,
-        )
-
-        # ensure columns are labeled X0..Xp-1, Y
-        data.columns = col_names
-
-        file_path = out / f"dataset_{i:04d}.csv"
-        data.to_csv(file_path, index=False)
-
-        rows.append({"index": i, "seed": ds_seed, "path": str(file_path)})
-        per_ds_betas.append({"index": i, **{f"beta_{j}": beta_i[j] for j in range(p)}})
-
-    # Save manifest and per-dataset betas
-    pd.DataFrame(rows).to_csv(out / "manifest.csv", index=False)
-    pd.DataFrame(per_ds_betas).to_csv(out / "betas_per_dataset.csv", index=False)
-
-
-if __name__ == "__main__":
-    #generate_combination(5000, 10)
-    generate_linear_exp_all_positive2_1000x_perbeta(
-        n=1000,
-        p=10,
-        n_datasets=1000,
-        out_dir="TabPFN_data/linear_exp_all_positive2",
-        base_seed=12344,
-    )
-'''
 
 def generate_linear_exp_all_positive2_1000x_perbeta(
     n=1000,
@@ -373,20 +264,9 @@ def generate_linear_exp_all_positive2_1000x_perbeta(
     n_datasets=1000,
     out_dir="TabPFN_data/linear_exp_all_positive2",
     base_seed=123456,
-    beta_seed_overrides=None,  # e.g., {0: 12345} to force dataset_0000 beta from seed 12345
+    beta_seed_overrides=None, 
 ):
-    """
-    Generates `n_datasets` datasets:
-      - X ~ Exp(1), then 'all_positive2' (no effect since Exp >= 0)
-      - Y = X @ beta + N(0, 0.1)
-      - **Different beta per dataset**; by default beta_seed = base_seed + 10_000 + i
-      - You can override beta seed for any dataset index via `beta_seed_overrides`
 
-    Saves:
-      - dataset_0000.csv ... dataset_0999.csv
-      - manifest.csv (index, data_seed, beta_seed, path)
-      - betas_per_dataset.csv (index, beta_seed, beta_0..beta_{p-1})
-    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -413,8 +293,8 @@ def generate_linear_exp_all_positive2_1000x_perbeta(
             scale=None,
             outlier_values=None,
             digit=None,
-            seed=data_seed,       # controls X and noise
-            beta=beta_i,          # this dataset's beta
+            seed=data_seed,       
+            beta=beta_i,          
             column_order=None,
             column_name=None,
         )
@@ -430,10 +310,6 @@ def generate_linear_exp_all_positive2_1000x_perbeta(
     pd.DataFrame(rows).to_csv(out / "manifest.csv", index=False)
     pd.DataFrame(per_ds_betas).to_csv(out / "betas_per_dataset.csv", index=False)
 
-    print(f"Done. Wrote {n_datasets} datasets to: {out.resolve()}")
-    print(f"betas_per_dataset.csv saved to: {out / 'betas_per_dataset.csv'}")
-    print(f"manifest.csv saved to: {out / 'manifest.csv'}")
-
 def generate_linear_exp_all_positive2_1000x_perbeta_shuffled(
     n=1000,
     p=10,
@@ -442,20 +318,6 @@ def generate_linear_exp_all_positive2_1000x_perbeta_shuffled(
     base_seed=123456,
     beta_seed_overrides=None,
 ):
-    """
-    Generates `n_datasets` datasets with SHUFFLED COLUMN ORDER:
-      - X ~ Exp(1), then 'all_positive2' (no effect since Exp >= 0)
-      - Y = X @ beta + N(0, 0.1)
-      - **Different beta per dataset**; by default beta_seed = base_seed + 10_000 + i
-      - **Column order is shuffled for each dataset**
-      - You can override beta seed for any dataset index via `beta_seed_overrides`
-
-    Saves:
-      - dataset_0000.csv ... dataset_0999.csv (with shuffled columns)
-      - manifest.csv (index, data_seed, beta_seed, path, column_shuffle_order)
-      - betas_per_dataset.csv (index, beta_seed, beta_0..beta_{p-1})
-      - column_orders.csv (index, original_order, shuffled_order)
-    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -484,13 +346,12 @@ def generate_linear_exp_all_positive2_1000x_perbeta_shuffled(
             scale=None,
             outlier_values=None,
             digit=None,
-            seed=data_seed,       # controls X and noise AND column shuffling
-            beta=beta_i,          # this dataset's beta
-            column_order="shuffle",  # THIS IS THE KEY CHANGE
+            seed=data_seed,      
+            beta=beta_i,          
+            column_order="shuffle",  
             column_name=None,
         )
 
-        # Set column names (which should now be shuffled)
         data.columns = col_names
         
         # Save the file
@@ -521,19 +382,10 @@ def generate_linear_exp_all_positive2_1000x_perbeta_shuffled(
             "shuffled_order": str(shuffled_order)
         })
 
-        # Print progress every 100 datasets
-        if (i + 1) % 100 == 0:
-            print(f"Generated {i + 1}/{n_datasets} datasets...")
-
     # Save logs
     pd.DataFrame(rows).to_csv(out / "manifest.csv", index=False)
     pd.DataFrame(per_ds_betas).to_csv(out / "betas_per_dataset.csv", index=False)
     pd.DataFrame(column_orders).to_csv(out / "column_orders.csv", index=False)
-
-    print(f"Done. Wrote {n_datasets} datasets to: {out.resolve()}")
-    print(f"betas_per_dataset.csv saved to: {out / 'betas_per_dataset.csv'}")
-    print(f"manifest.csv saved to: {out / 'manifest.csv'}")
-    print(f"column_orders.csv saved to: {out / 'column_orders.csv'}")
 
 def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
     n=1000,
@@ -543,19 +395,7 @@ def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
     base_seed=123456,
     beta_seed_overrides=None,
 ):
-    """
-    Generates `n_datasets` datasets with 10-DIGIT PRECISION:
-      - X ~ Exp(1), then 'all_positive2' (no effect since Exp >= 0)
-      - Y = X @ beta + N(0, 0.1)
-      - **Different beta per dataset**; by default beta_seed = base_seed + 10_000 + i
-      - **All values rounded to 10 decimal places**
-      - You can override beta seed for any dataset index via `beta_seed_overrides`
 
-    Saves:
-      - dataset_0000.csv ... dataset_0999.csv (with 10-digit precision)
-      - manifest.csv (index, data_seed, beta_seed, path, precision)
-      - betas_per_dataset.csv (index, beta_seed, beta_0..beta_{p-1})
-    """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -582,9 +422,9 @@ def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
             sign_control="all_positive2",
             scale=None,
             outlier_values=None,
-            digit="10_digits",    # THIS IS THE KEY CHANGE
-            seed=data_seed,       # controls X and noise
-            beta=beta_i,          # this dataset's beta
+            digit="10_digits",   
+            seed=data_seed,       
+            beta=beta_i,          
             column_order=None,
             column_name=None,
         )
@@ -610,21 +450,13 @@ def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
             **{f"beta_{j}": beta_i[j] for j in range(p)}
         })
 
-        # Print progress every 100 datasets
-        if (i + 1) % 100 == 0:
-            print(f"Generated {i + 1}/{n_datasets} datasets with 10-digit precision...")
-
     # Save logs
     pd.DataFrame(rows).to_csv(out / "manifest.csv", index=False)
     pd.DataFrame(per_ds_betas).to_csv(out / "betas_per_dataset.csv", index=False)
 
-    print(f"Done. Wrote {n_datasets} datasets to: {out.resolve()}")
-    print(f"betas_per_dataset.csv saved to: {out / 'betas_per_dataset.csv'}")
-    print(f"manifest.csv saved to: {out / 'manifest.csv'}")
 
 
 if __name__ == "__main__":
-    # Force dataset_0000 to use beta drawn with RNG seed 12345
     '''
     generate_linear_exp_all_positive2_1000x_perbeta(
         n=1000,
