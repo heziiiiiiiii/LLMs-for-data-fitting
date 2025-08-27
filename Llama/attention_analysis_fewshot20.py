@@ -522,7 +522,6 @@ def run_analysis_1000_datapoints():
     
     return (row_df, name_df, value_df, row_summary, name_summary, value_summary, gen_df)
 
-# Run the analysis
 if __name__ == "__main__":
     
     # Model Setup
