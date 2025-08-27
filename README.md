@@ -1,5 +1,20 @@
 # Just Because You Can, Doesn’t Mean You Should: LLMs for Data Fitting
 
+## References for Implementation
+
+Below are key resources and documentation used for implementation.
+
+### GPT-4o-mini (Closed-weight)
+- OpenAI API documentation: https://platform.openai.com/docs
+- Fine-tuning guide: [https://platform.openai.com/docs/guides/fine-tuning](https://platform.openai.com/docs/guides/supervised-fine-tuning)
+
+### LLaMA-3-8B-Instruct (Open-weight)
+- Inference code (Hugging Face): https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+
+### TabPFN (Tabular Foundation Model)
+- Official GitHub repository: [https://github.com/automl/TabPFN](https://github.com/PriorLabs/TabPFN)
+
+
 ## Code Structure
 
 ### GPT Models (`GPT/`)
