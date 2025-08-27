@@ -102,13 +102,8 @@ def classify_tokens_final(tokens, attention_values)
     
     return categories
 
+# token structure cleaning
 def remove_leading_single_digits(token_attention_list):
-    """
-    Removes a token (pos, token, attn) if:
-      - token is a single-digit number
-      - next token is also a single-digit number
-      - their positions differ by exactly 2 (next_pos = curr_pos + 2)
-    """
     token_attention_list = [t for t in token_attention_list if 72 <= t[0] <= 1465]
     cleaned = []
     i = 0
@@ -132,10 +127,6 @@ def remove_leading_single_digits(token_attention_list):
     return cleaned
 
 def extract_x0_to_x9_values_attention(filtered_tokens):
-    """
-    Groups tokens into X0_value to X9_value repeatedly,
-    summing their attention scores. Skips groups with only 1 token.
-    """
     if not filtered_tokens:
         return []
 
@@ -177,10 +168,6 @@ def sum_xn_values(xn_attention_list):
 # code for shuffle column order
 '''
 def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
-    """
-    Groups consecutive tokens into X0_value, X1_value, ..., based on actual feature name order,
-    summing their attention scores. Skips groups with only 1 token.
-    """
     if not filtered_tokens:
         return []
 
@@ -211,18 +198,6 @@ def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
 
     return results
 '''
-
-def sum_xn_values(xn_attention_list):
-    """
-    Sums attention scores for each Xn_value label across multiple chunks.
-    """
-    total_by_label = defaultdict(float)
-    for label, attn in xn_attention_list:
-        total_by_label[label] += attn
-
-    # Sort by X0_value to X9_value
-    sorted_result = sorted(total_by_label.items(), key=lambda x: int(x[0][1]))
-    return sorted_result
 
 
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=20):
@@ -504,7 +479,7 @@ def run_analysis_1000_datapoints():
     row_df = pd.DataFrame(all_row_results)
     name_df = pd.DataFrame(all_name_results)
     value_df = pd.DataFrame(all_value_results)
-    gen_df  = pd.DataFrame(all_generations)   # NEW
+    gen_df  = pd.DataFrame(all_generations)   
 
     # ROW-LEVEL ANALYSIS 
     if not row_df.empty:
@@ -530,7 +505,7 @@ def run_analysis_1000_datapoints():
         name_df.to_csv(f"{data_name}_fewshot{k}_name_level_attention_results.csv", index=False)
         name_summary.to_csv(f"{data_name}_fewshot{k}_name_level_attention_summary.csv")
     
-    # FEATURE VALUE-LEVEL ANALYSIS 
+    # VALUE-LEVEL ANALYSIS 
     if not value_df.empty:
         value_summary = value_df.groupby('feature')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
@@ -559,7 +534,7 @@ if __name__ == "__main__":
     model.eval()
 
     # Data
-    data_name = "synthetic_data_linear_exp_all_positive2_shuffle2"
+    data_name = "xxx"
     X, Y = read_data(data_name)
     X_train, X_test, Y_train, Y_test = split_data(X, Y)
     k = 20  # Number of few-shot examples
