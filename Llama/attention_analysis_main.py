@@ -102,13 +102,8 @@ def classify_tokens_final(tokens, attention_values)
     
     return categories
 
+# token structure cleaning
 def remove_leading_single_digits(token_attention_list):
-    """
-    Removes a token (pos, token, attn) if:
-      - token is a single-digit number
-      - next token is also a single-digit number
-      - their positions differ by exactly 2 (next_pos = curr_pos + 2)
-    """
     token_attention_list = [t for t in token_attention_list if 72 <= t[0] <= 1465]
     cleaned = []
     i = 0
@@ -132,10 +127,6 @@ def remove_leading_single_digits(token_attention_list):
     return cleaned
 
 def extract_x0_to_x9_values_attention(filtered_tokens):
-    """
-    Groups tokens into X0_value to X9_value repeatedly,
-    summing their attention scores. Skips groups with only 1 token.
-    """
     if not filtered_tokens:
         return []
 
@@ -166,10 +157,6 @@ def extract_x0_to_x9_values_attention(filtered_tokens):
 
 # code for change column order
 def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
-    """
-    Groups consecutive tokens into X0_value, X1_value, ..., based on actual feature name order,
-    summing their attention scores. Skips groups with only 1 token.
-    """
     if not filtered_tokens:
         return []
 
@@ -212,11 +199,6 @@ def sum_xn_values(xn_attention_list):
 
 
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=10):
-    """
-    Analyze attention for a single datapoint.
-      - Generate until <|eot_id|>, not a fixed length.
-      - Compute ave_attention over the input length by averaging raw (head-averaged) attentions across generated steps.
-    """
     try:
         new_data = X_test.iloc[data_idx]
 
@@ -507,7 +489,6 @@ def run_analysis_1000_datapoints():
     
     return (row_df, name_df, value_df, row_summary, name_summary, value_summary, gen_df)
 
-# Run the analysis
 if __name__ == "__main__":
     
     # Model Setup
@@ -519,7 +500,7 @@ if __name__ == "__main__":
     model.eval()
 
     # Data
-    data_name = "synthetic_data_linear_exp_all_positive2"
+    data_name = "xxx"
     X, Y = read_data(data_name)
     X_train, X_test, Y_train, Y_test = split_data(X, Y)
     k = 10  # Number of few-shot examples
