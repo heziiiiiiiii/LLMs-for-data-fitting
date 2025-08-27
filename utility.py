@@ -46,23 +46,6 @@ def read_data(data_name):
 # note that the 80% is later used for GridSearchCV or GPT fine-tuning
 def split_data(X, Y, p = 0.8, seed = 123456):
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size = p, random_state = seed)
-    '''
-    first_row_X = X_train.iloc[[0]]  
-    first_row_Y = Y_train.iloc[[0]]  
-
-    # Remove the first row from X_train and Y_train
-    remaining_X_train = X_train.iloc[1:].reset_index(drop=True)
-    remaining_Y_train = Y_train.iloc[1:].reset_index(drop=True)
-
-    # Shuffle the remaining rows while keeping X and Y aligned
-    shuffled_data = pd.concat([remaining_X_train, remaining_Y_train], axis=1).sample(frac=1, random_state=42).reset_index(drop=True)
-    shuffled_X_train = shuffled_data.iloc[:, :-1]  
-    shuffled_Y_train = shuffled_data.iloc[:, -1]  
-
-    # Reattach the first row to the shuffled DataFrame
-    X_train = pd.concat([first_row_X, shuffled_X_train], ignore_index=True)
-    Y_train = pd.concat([first_row_Y, shuffled_Y_train], ignore_index=True)
-    '''
     return X_train, X_test, Y_train, Y_test
 
 def split_outlier_data(X, Y, p = 0.8, seed = 123456):
@@ -149,38 +132,3 @@ def performance_eval(Y_pred, Y_test):
     #accuracy = np.mean(Y_pred == Y_test) * 100
 
     return MAE, RMSE, MAPE
-
-'''
-def performance_eval(Y_pred, Y_test, X_test):
-
-    # Convert X_test to DataFrame if it's a numpy array
-    if isinstance(X_test, np.ndarray):
-        df_test = pd.DataFrame(X_test, columns=["a", "b"])  
-    else:
-        df_test = X_test.copy()
-
-    # Extract number of digits
-    df_test["digits_a"] = df_test["a"].astype(str).apply(len)
-    df_test["digits_b"] = df_test["b"].astype(str).apply(len)
-
-    # Add predicted and actual values
-    Y_pred = np.array(Y_pred)
-    df_test["predicted"] = Y_pred.astype(int)
-    df_test["actual"] = Y_test
-
-    # Create category based on digits_a * digits_b
-    df_test["category"] = df_test["digits_a"].astype(str) + "*" + df_test["digits_b"].astype(str)
-
-    # Compute accuracy
-    df_test["is_correct"] = df_test["predicted"] == df_test["actual"]
-
-    # Group by category and calculate accuracy
-    digit_accuracy = df_test.groupby("category").agg(
-        Total_Samples=("is_correct", "count"),
-        Accuracy=("is_correct", "mean")
-    ).reset_index()
-
-    # Convert accuracy to percentage
-    digit_accuracy["Accuracy"] = digit_accuracy["Accuracy"] * 100
-    return digit_accuracy
-'''
