@@ -339,7 +339,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         if len(all_attentions) == 0:
             return [], [], [], gen_info
 
-        # --- Length-normalized average attention over the FIXED INPUT SPAN ---
+        # Length-normalized average attention over the length
         input_length = len(tokenizer.convert_ids_to_tokens(input_ids[0]))
         per_step_raw = [attn.mean(dim=0)[:input_length] for attn in all_attentions]   # each [input_length]
         ave_attention_tensor = torch.stack(per_step_raw, dim=0).mean(dim=0)           # [input_length]
@@ -347,7 +347,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
 
         tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
 
-        # === LEVEL 1: NAME-LEVEL ===
+        # LEVEL 1: NAME-LEVEL 
         grouped_result = classify_tokens_final(tokens, ave_attention)
         name_to_attention = defaultdict(float)
         for pos, token, att in grouped_result['column_names']:
@@ -379,7 +379,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                     'attention': attention
                 })
 
-        # === LEVEL 2: VALUE-LEVEL ===
+        # LEVEL 2: VALUE-LEVEL
         filtered = remove_leading_single_digits(grouped_result['input_numbers'])
         #feature_result = extract_x0_to_x9_values_attention(filtered)
         features = X_train.columns
@@ -399,7 +399,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                     'attention': attention
                 })
         
-        # === LEVEL 3: ROW-LEVEL ===
+        # LEVEL 3: ROW-LEVEL 
         position_to_attention = defaultdict(float)
         for pos, token, att in grouped_result['column_names']:
             position_to_attention[(pos, token)] += att
@@ -468,8 +468,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
 
     
 def run_analysis_1000_datapoints():
-    """Run attention analysis on 1000 data points with 3-level analysis: row, name, and feature value.
-       Also saves generated tokens per datapoint."""
+    """Run attention analysis on 1000 data points with 3-level analysis: row, name, and feature value."""
     features = X_train.columns
     n_datapoints = min(1000, len(X_test))
     print(f"Analyzing {n_datapoints} data points...")
