@@ -383,12 +383,12 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
         filtered = remove_leading_single_digits(grouped_result['input_numbers'])
         #feature_result = extract_x0_to_x9_values_attention(filtered)
         features = X_train.columns
-        feature_result = extract_values_attention_by_feature_name(filtered, features)
+        feature_result = extract_values_attention(filtered, features) # change to extract_values_attention_by_feature_name(filtered, features) for shuffled column order data
         feature_summary = sum_xn_values(feature_result)
 
         value_level_results = []
         for feature_label, attention in feature_summary:
-            feature_idx = int(feature_label[1])  # from "X0_value"
+            feature_idx = int(feature_label[1]) 
             if feature_idx < len(features):
                 feature_name = f"X{feature_idx}"
                 actual_value = new_data[feature_name] if feature_name in new_data.index else None
