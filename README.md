@@ -4,7 +4,9 @@
 We use three types models:
 
 close-weight general-purpose LLMs: GPT40-mini
+
 p[en-weight general-purpose LLMs: Llama-3-8B-instruct
+
 special purpose tabular foundation model: TabPFN
 
 ## GPT Models
