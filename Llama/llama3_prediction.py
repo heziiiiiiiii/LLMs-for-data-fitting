@@ -249,7 +249,7 @@ if __name__ == "__main__":
         })
         
         os.makedirs("llama3_predictions", exist_ok=True)
-        output_file = f"llama3_predictions/{data_name}_{k}shots_predictions3.csv"
+        output_file = f"llama3_predictions/{data_name}_{k}shots_predictions.csv"
         results_df.to_csv(output_file, index=False)
         print(f"\nResults saved to: {output_file}")
     else:
