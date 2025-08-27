@@ -506,108 +506,44 @@ def run_analysis_1000_datapoints():
     value_df = pd.DataFrame(all_value_results)
     gen_df  = pd.DataFrame(all_generations)   # NEW
 
-    print("\n" + "="*90)
-    print("THREE-LEVEL ATTENTION ANALYSIS RESULTS")
-    print("="*90)
-    
-    # === LEVEL 1: ROW-LEVEL ANALYSIS ===
+    # ROW-LEVEL ANALYSIS 
     if not row_df.empty:
         row_summary = row_df.groupby('group')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
         
-        print("\n LEVEL 1: ROW-LEVEL ATTENTION (Original Grouped Analysis)")
-        print("-" * 70)
         print(row_summary)
         
-        print(f"\n Row-level insights:")
-        top_row_group = row_summary['mean'].idxmax()
-        print(f"  • Most attended row group: {top_row_group} ({row_summary.loc[top_row_group, 'mean']:.6f})")
-        print(f"  • Total row groups analyzed: {len(row_summary)}")
-        
         # Save row-level results
-        row_df.to_csv('row_level_attention_results_shuffle_fewshot20.csv', index=False)
-        row_summary.to_csv('row_level_attention_summary_shuffle_fewshot20.csv')
+        row_df.to_csv(f"{data_name}_fewshot{k}_row_level_attention_results.csv", index=False)
+        row_summary.to_csv(f"{data_name}_fewshot{k}_row_level_attention_summary.csv")
     
-    # === LEVEL 2: NAME-LEVEL ANALYSIS ===
+    # NAME-LEVEL ANALYSIS 
     if not name_df.empty:
         name_summary = name_df.groupby('feature')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
         
-        print(f"\n  LEVEL 2: NAME-LEVEL ATTENTION (Column Names)")
-        print("-" * 70)
         print(name_summary)
         
-        print(f"\n Name-level insights:")
-        top_name_feature = name_summary['mean'].idxmax()
-        print(f"  • Most attended feature name: {top_name_feature} ({name_summary.loc[top_name_feature, 'mean']:.6f})")
-        avg_name_attention = name_summary['mean'].mean()
-        print(f"  • Average attention across all names: {avg_name_attention:.6f}")
-        
-        # Feature value range analysis for name-level
-        print(f"\n Feature value ranges for name-level attention:")
-        for feature in name_summary.index:
-            feature_data = name_df[name_df['feature'] == feature]
-            if len(feature_data) > 0:
-                min_val = feature_data['feature_value'].min()
-                max_val = feature_data['feature_value'].max()
-                mean_val = feature_data['feature_value'].mean()
-                print(f"  • {feature}: value range [{min_val:.3f}, {max_val:.3f}], mean={mean_val:.3f}")
-        
         # Save name-level results
-        name_df.to_csv('name_level_attention_results_shuffle_fewshot20.csv', index=False)
-        name_summary.to_csv('name_level_attention_summary_shuffle_fewshot20.csv')
+        name_df.to_csv(f"{data_name}_fewshot{k}_name_level_attention_results.csv", index=False)
+        name_summary.to_csv(f"{data_name}_fewshot{k}_name_level_attention_summary.csv")
     
-    # === LEVEL 3: FEATURE VALUE-LEVEL ANALYSIS ===
+    # FEATURE VALUE-LEVEL ANALYSIS 
     if not value_df.empty:
         value_summary = value_df.groupby('feature')['attention'].agg([
             'mean', 'std', 'min', 'max', 'count'
         ]).round(6)
-        
-        print(f"\n LEVEL 3: FEATURE VALUE-LEVEL ATTENTION (Actual Values)")
-        print("-" * 70)
+
         print(value_summary)
         
-        print(f"\n Value-level insights:")
-        top_value_feature = value_summary['mean'].idxmax()
-        print(f"  • Most attended feature value: {top_value_feature} ({value_summary.loc[top_value_feature, 'mean']:.6f})")
-        avg_value_attention = value_summary['mean'].mean()
-        print(f"  • Average attention across all values: {avg_value_attention:.6f}")
-        
-        # Correlation analysis between feature values and attention
-        print(f"\n Value-Attention Correlations:")
-        for feature in value_summary.index:
-            feature_data = value_df[value_df['feature'] == feature]
-            if len(feature_data) > 1:
-                correlation = feature_data['feature_value'].corr(feature_data['attention'])
-                print(f"  • {feature}: r = {correlation:.4f}")
-        
-        # Top attention cases with actual values
-        print(f"\n Top attention cases (Feature Value Level):")
-        top_cases = value_df.nlargest(5, 'attention')
-        for _, case in top_cases.iterrows():
-            print(f"  • Data {case['datapoint_idx']}: {case['feature']}={case['feature_value']:.3f} → attention={case['attention']:.6f}")
-        
         # Save value-level results
-        value_df.to_csv('value_level_attention_results_shuffle_fewshot20.csv', index=False)
-        value_summary.to_csv('value_level_attention_summary_shuffle_fewshot20.csv')
+        value_df.to_csv(f"{data_name}_fewshot{k}_value_level_attention_results.csv", index=False)
+        value_summary.to_csv(f"{data_name}_fewshot{k}_value_level_attention_summary.csv")
         
-    # NEW: save generations (always useful even when attention tables are empty)
-    gen_df.to_csv('generated_outputs_shuffle.csv', index=False)
-    
-    
-    # === SAVE ALL RESULTS ===
-    print(f"\n FILES SAVED:")
-    print(f"   Row Level:")
-    print(f"    - row_level_attention_results_shuffle_fewshot20.csv")
-    print(f"    - row_level_attention_summary_shuffle_fewshot20.csv")
-    print(f"   Name Level:")
-    print(f"    - name_level_attention_results_shuffle_fewshot20.csv")
-    print(f"    - name_level_attention_summary_shuffle_fewshot20.csv")
-    print(f"   Value Level:")
-    print(f"    - value_level_attention_results_shuffle_fewshot20.csv")
-    print(f"    - value_level_attention_summary_shuffle_fewshot20.csv")
+    # save generations 
+    gen_df.to_csv(f"{data_name}_fewshot{k}_generated_outputs.csv", index=False)
     
     return (row_df, name_df, value_df, row_summary, name_summary, value_summary, gen_df)
 
@@ -616,7 +552,7 @@ if __name__ == "__main__":
     
     # Model Setup
     model_name = "meta-llama/Meta-Llama-3-8B-Instruct"  
-    cache_dir = "/users/4/liu03021/llama3_3" 
+    cache_dir = "xxx"  # model path
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=True, cache_dir=cache_dir)
     model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=True, cache_dir=cache_dir,         torch_dtype="auto", device_map="auto")
