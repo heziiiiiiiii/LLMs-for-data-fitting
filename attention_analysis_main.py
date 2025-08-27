@@ -164,6 +164,42 @@ def extract_x0_to_x9_values_attention(filtered_tokens):
 
     return results
 
+# code for change column order
+def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
+    """
+    Groups consecutive tokens into X0_value, X1_value, ..., based on actual feature name order,
+    summing their attention scores. Skips groups with only 1 token.
+    """
+    if not filtered_tokens:
+        return []
+
+    filtered_tokens = sorted(filtered_tokens, key=lambda x: x[0])
+    results = []
+    current_group = [filtered_tokens[0]]
+    feature_idx = 0  # tracks index in feature_names
+
+    for i in range(1, len(filtered_tokens)):
+        prev_pos = filtered_tokens[i - 1][0]
+        curr_pos = filtered_tokens[i][0]
+
+        if curr_pos == prev_pos + 1:
+            current_group.append(filtered_tokens[i])
+        else:
+            if len(current_group) > 1 and feature_idx < len(feature_names):
+                total_attention = sum(attn for _, _, attn in current_group)
+                feature_name = feature_names[feature_idx]
+                results.append((f"{feature_name}_value", total_attention))
+                feature_idx = (feature_idx + 1) % 10
+            current_group = [filtered_tokens[i]]
+
+    # Handle last group
+    if len(current_group) > 1 and feature_idx < len(feature_names):
+        total_attention = sum(attn for _, _, attn in current_group)
+        feature_name = feature_names[feature_idx]
+        results.append((f"{feature_name}_value", total_attention))
+
+    return results
+
 # Sums attention scores for each Xn_value label across multiple chunks.
 def sum_xn_values(xn_attention_list):
     total_by_label = defaultdict(float)
