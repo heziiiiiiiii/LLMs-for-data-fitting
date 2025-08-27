@@ -238,7 +238,6 @@ def generate_combination(n,p, seed=12345):
 
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, p)
-    print(beta)
     # [0.92961609 0.31637555 0.18391881 0.20456028 0.56772503 0.5955447 0.96451452 0.6531771  0.74890664 0.65356987]
     #outlier_values = generate_outliers(4,n)
     
