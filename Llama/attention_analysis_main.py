@@ -126,6 +126,7 @@ def remove_leading_single_digits(token_attention_list):
 
     return cleaned
 
+# extract values' attention
 def extract_x0_to_x9_values_attention(filtered_tokens):
     if not filtered_tokens:
         return []
@@ -197,7 +198,7 @@ def sum_xn_values(xn_attention_list):
     sorted_result = sorted(total_by_label.items(), key=lambda x: int(x[0][1]))
     return sorted_result
 
-
+# single datapoint analysis
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=10):
     try:
         new_data = X_test.iloc[data_idx]
