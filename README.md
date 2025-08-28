@@ -30,7 +30,7 @@ Below are key resources and documentation used for implementation.
 - `plot.ipynb`: Visualizations of attention patterns.
 
 ### TabPFN (`TabPFN/`)
-- `synthetic_TabPFN.py`: Code to simulate synthetic datasets.
+- `synthetic_TabPFN.py`: Code to simulate synthetic datasets for TabPFN.
 - `tabpfn.ipynb`: In-context learning (ICL) experiments using TabPFN.
 - `results_summary.ipynb`: Code to aggregate results.
 
