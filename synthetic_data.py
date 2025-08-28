@@ -16,15 +16,9 @@ def simulate_data(n, p, dgp, distribution, digit, seed = 123456, beta=None, colu
 
     # Generate Y
     #beta = np.random.uniform(0, 1, p)
-    if dgp == 'mean':
-        Y = np.mean(X, axis=1)
-    elif dgp == 'linear':
+    if dgp == 'linear':
         Y = X @ beta + np.random.normal(0, 0.1, n)
         # print(np.random.normal(0, 0.1, n))
-    elif dgp == 'sigmoid':
-        Y = 1 / (1 + np.exp(-X @ beta)) + np.random.normal(0, 0.1, n)
-    #elif dgp == 'sigmoid2':
-        #Y = 1 / (1 + np.exp(-X))
 
     # put X and Y into a dataframe
     data = pd.DataFrame(np.column_stack((X, Y)))
@@ -32,14 +26,6 @@ def simulate_data(n, p, dgp, distribution, digit, seed = 123456, beta=None, colu
     # Digit control
     if digit == "10_digits":
         data = pd.DataFrame(np.column_stack((X, Y))).round(10)
-    elif digit == "11_digits":
-        data = pd.DataFrame(np.column_stack((X, Y))).round(11)
-    elif digit == "12_digits":
-        data = pd.DataFrame(np.column_stack((X, Y))).round(12)
-    elif digit == "13_digits":
-        data = pd.DataFrame(np.column_stack((X, Y))).round(13)
-    elif digit == "14_digits":
-        data = pd.DataFrame(np.column_stack((X, Y))).round(14)
 
     # add column names
     col_names = [f"X{i}" for i in range(p)] + ["Y"]
@@ -60,17 +46,7 @@ def simulate_data(n, p, dgp, distribution, digit, seed = 123456, beta=None, colu
                      "Eleventh", "Twelfth", "Thirteenth", "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth", "Nineteenth", "Twentieth"]
         new_name = [f"{ordinal_names[i]}_Variable" if i < len(ordinal_names) else f"{i+1}_th_Variable" for i in range(p)] + ["Y"]
         return data, new_name
-    elif column_name == "diff_name2":
-        new_name = [f"X0_{i}" for i in range(p)] + ["Y"]
-        return data, new_name
-    elif column_name == "diff_name3":
-        new_name = [f"X0_0_{i}" for i in range(p)] + ["Y"]
-        return data, new_name
-    elif column_name == "diff_name4":
-        new_name = [f"X0_0_0_{i}" for i in range(p)] + ["Y"]
-        return data, new_name
     
-
     return data, col_names
 
 # actually range
