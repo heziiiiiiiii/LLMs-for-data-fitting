@@ -1,5 +1,5 @@
 # Just Because You Can, Doesn’t Mean You Should: LLMs for Data Fitting
-[Our Paper: "Just Because You Can, Doesn’t Mean You Should: LLMs for Data Fitting"](https://arxiv.org/abs/2508.19563)
+Our Paper: ["Just Because You Can, Doesn’t Mean You Should: LLMs for Data Fitting"](https://arxiv.org/abs/2508.19563)
 
 
 ## References for Implementation
