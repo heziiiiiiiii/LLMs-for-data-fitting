@@ -4,8 +4,6 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 
 # read in data, specify features and target
-# for all data, drop any row with NA
-# if possible, normalize target to be between 0 and 1
 def read_data(data_name):
     match data_name:
         case data_name if data_name.startswith("synthetic_"):
@@ -29,4 +27,5 @@ def performance_eval(Y_pred, Y_test):
     RMSE = np.sqrt(np.mean((Y_pred - Y_test)**2))
     MAPE = np.mean(np.abs(Y_test - Y_pred) / ((np.abs(Y_test) + np.abs(Y_pred)) / 2)) * 100
     return MAE, RMSE, MAPE
+
 
