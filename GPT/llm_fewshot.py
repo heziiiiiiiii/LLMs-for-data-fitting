@@ -46,6 +46,7 @@ def construct_prompt(data_name, X_train, Y_train, k):
             #for i in reversed(range(k)): # for rowOrder variation
             for i in range(k):
                 examples += (
+                    # f"Here is example {k - i}:\n" + # for rowOrder variation
                     f"Here is example {i+1}:\n" +
                     "A data point has " + narrate_data(features, X_train.iloc[i], case="base") + "\n" +
                     "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
