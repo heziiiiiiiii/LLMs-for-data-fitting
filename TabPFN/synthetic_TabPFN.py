@@ -457,9 +457,9 @@ def generate_linear_exp_all_positive2_1000x_perbeta_10digits(
 if __name__ == "__main__":
     '''
     generate_linear_exp_all_positive2_1000x_perbeta(
-        n=1000,
+        n=5000,
         p=10,
-        n_datasets=1000,
+        n_datasets=100,
         out_dir="TabPFN_data/linear_exp_all_positive2",
         base_seed=123456,
         beta_seed_overrides=None,
@@ -467,9 +467,9 @@ if __name__ == "__main__":
 
     
     generate_linear_exp_all_positive2_1000x_perbeta_shuffled(
-    n=1000,
+    n=5000,
     p=10,
-    n_datasets=1000,
+    n_datasets=100,
     out_dir="TabPFN_data/linear_exp_all_positive2_shuffle",
     base_seed=123456,
     beta_seed_overrides=None,
@@ -477,9 +477,9 @@ if __name__ == "__main__":
     '''
 
     generate_linear_exp_all_positive2_1000x_perbeta_10digits(
-    n=1000,
+    n=5000,
     p=10,
-    n_datasets=1000,
+    n_datasets=100,
     out_dir="TabPFN_data/linear_exp_all_positive2_10_digits",
     base_seed=123456,
     beta_seed_overrides=None,
