@@ -79,27 +79,10 @@ if __name__ == "__main__":
     #name = f"synthetic_data_{relationship_type}"
     data_list = [name]
 
-
-    '''
-    dgps = ['linear']
-    distributions = ['exp', 'normal', 'uniform']
-    sign_controls = ['all_positive']
-    #digits = ['fixed_digit', 'random_digit']
-    #outliers = ['fixed_outlier']
-    data_list = []
-    for dgp in dgps:
-        for distribution in distributions:
-            for sign_control in sign_controls:
-                for outlier in outliers:
-                    name = f"synthetic_data_{dgp}_{distribution}_{sign_control}_{outlier}"
-                    data_list.append(name)
-    '''
-
     for data_name in data_list:
         print(f"Running tabular methods on {data_name}: ")
         X, Y = read_data(data_name)
         X_train, X_test, Y_train, Y_test = split_data(X, Y)
-        #X_train, X_test, Y_train, Y_test = split_missing_data(X, Y)
         train_df = pd.concat([X_train, Y_train], axis=1)
         train_df = train_df.dropna()
         X_train = train_df.iloc[:, :-1]
@@ -121,29 +104,9 @@ if __name__ == "__main__":
         #for model_name in ['MLP']:
             model, param_grid = init_model(model_name)
             est, Y_pred, MAE, RMSE, MAPE, best_params = train_eval_model(model, param_grid, X_train, Y_train, X_test, Y_test)
-            
-            '''
-            base_predictions[model_name] = Y_pred
-            pred_df = pd.DataFrame({'Y_true': Y_test, 'Y_pred': Y_pred})
-            pred_df.to_csv(f"prediction_results/{data_name}_simple_{model_name}_base_predictions.csv", index=False)
-            '''
+
             prediction[model_name] = Y_pred
             pred_df = pd.DataFrame({'Y_true': Y_test, 'Y_pred': Y_pred})
-
-            '''
-            if model_name == 'MLP':
-                pred_df.to_csv(f"prediction_results/{data_name}_simple_{model_name}_predictions.csv", index=False)
-            else:
-                pred_df.to_csv(f"prediction_results/{data_name}_{model_name}_predictions.csv", index=False)
-            Y_pred_base = base_preds['Y_pred'].values
-
-            # Calculate prediction change metrics
-            prediction_diffs = np.abs(Y_pred - Y_pred_base)
-            MAPC = np.mean(prediction_diffs)
-            MAPC_std = np.std(prediction_diffs)
-            MAPC_max = np.max(prediction_diffs)
-            prediction_results_df.loc[model_name] = [MAPC, MAPC_std, MAPC_max]
-            '''
 
             results_df.loc[model_name] = [MAE, RMSE, MAPE, str(best_params)]
             print(f"Model: {model_name}, MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}, Best Parameters: {best_params}")
