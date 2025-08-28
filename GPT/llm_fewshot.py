@@ -23,12 +23,6 @@ def narrate_data(feature_names, feature_values, case):
             output += feature_names[i] + " " + str(feature_values[i]) + ", "
         return output
     
-    elif case == "space":
-        output = ''    
-        for i in range(len(feature_names)):
-            output += feature_names[i] + "  " + str(feature_values[i]) + ", "
-        return output
-    
     elif case == "json":
         data_dict = {feature_names[i]: feature_values[i] for i in range(len(feature_names))}
         return json.dumps(data_dict)
@@ -41,20 +35,6 @@ def narrate_data(feature_names, feature_values, case):
 
 def construct_prompt(data_name, X_train, Y_train, k):
     match data_name:
-        case "wine-red":
-            context = "Your job is to predict the quality of red wine based on its physicochemical properties.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0]) + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-        
-        case "wine-red-nf":
-            context = "Your job is to predict the quality of red wine based on some features.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0]) + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-        
         case synthetic_name if synthetic_name.startswith("synthetic_"):
             context = "Your job is to predict the target value based on some features.\n"
             features = X_train.columns
@@ -62,41 +42,25 @@ def construct_prompt(data_name, X_train, Y_train, k):
             input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
             output_format = "Please output the target value as a number. It is very important to only output the target number and nothing else.\n"
             examples = f"You will be given a total of {k} examples\n"
-            prompt = f"The presented {k} examples above are not in particular order.\n"
-            #for i in reversed(range(k)):
+            prompt = f"The {k} examples presented above are not in any particular order.\n"
+            #for i in reversed(range(k)): # for rowOrder variation
             for i in range(k):
                 examples += (
-                    #f"Here is example {k - i}:\n" +
                     f"Here is example {i+1}:\n" +
                     "A data point has " + narrate_data(features, X_train.iloc[i], case="base") + "\n" +
                     "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
                 )
-
         case _:
             print("Invalid data name.")
             exit()
 
-    #return context + input_format + output_format + examples + prompt
+    #return context + input_format + output_format + examples + prompt # for rowOrder with extra instruction variation
     return context + input_format + output_format + examples
 
 # code for combination of “Variable Order” and “Format”
 '''
 def construct_prompt(data_name, X_train, Y_train, k):
     match data_name:
-        case "wine-red":
-            context = "Your job is to predict the quality of red wine based on its physicochemical properties.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0], case="base") + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-
-        case "wine-red-nf":
-            context = "Your job is to predict the quality of red wine based on some features.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0], case="base") + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-
         case synthetic_name if synthetic_name.startswith("synthetic_"):
             context = "Your job is to predict the target value based on some features.\n"
             features = X_train.columns
@@ -116,7 +80,6 @@ def construct_prompt(data_name, X_train, Y_train, k):
                     + "A data point has " + narrate_data(col_order, xrow_shuffled, case="json") + "\n"
                     + "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
                 )
-            # ----------------------------------------------------
 
         case _:
             print("Invalid data name.")
@@ -370,8 +333,8 @@ if __name__ == "__main__":
     data_list = [name]
     k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
 
-    # task should generally be performed in the order of 1 to 5
-    task = input("Enter Task. \n1: launch batch prediction job \n4: process batch prediction results \n5: report performance \n")
+    # task should generally be performed in the order of 1 to 3
+    task = input("Enter Task. \n1: launch batch prediction job \n2: process batch prediction results \n3: report performance \n")
     match task:
         case "1":
             '''
@@ -388,7 +351,7 @@ if __name__ == "__main__":
                     launch_batch_prediction(data_name, False, k)
             
         
-        case "4":
+        case "2":
             batch_id = input("Enter batch ID: \n")
             result = client.batches.retrieve(batch_id)
             if result.status != "completed":
@@ -412,7 +375,7 @@ if __name__ == "__main__":
                     print("something is wrong with description parsing.")
                     exit()
 
-        case "5":
+        case "3":
             for data_name in data_list:
                 X, Y = read_data(data_name)
                 X_train, X_test, Y_train, Y_test = split_data(X, Y)
