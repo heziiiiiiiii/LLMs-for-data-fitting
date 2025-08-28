@@ -12,7 +12,6 @@ client = OpenAI(organization = "xxx", project = "xxx")
 seed = 123456
 
 # given a single data point, "narrate" its feature values and feature names as a string
-
 def narrate_data(feature_names, feature_values, case):
     if type(feature_values) == pd.Series:
         feature_values = feature_values.values
@@ -23,12 +22,6 @@ def narrate_data(feature_names, feature_values, case):
             output += feature_names[i] + " " + str(feature_values[i]) + ", "
         return output
     
-    elif case == "space":
-        output = ''    
-        for i in range(len(feature_names)):
-            output += feature_names[i] + "  " + str(feature_values[i]) + ", "
-        return output
-    
     elif case == "json":
         data_dict = {feature_names[i]: feature_values[i] for i in range(len(feature_names))}
         return json.dumps(data_dict)
@@ -36,49 +29,19 @@ def narrate_data(feature_names, feature_values, case):
     else:
         raise ValueError("Invalid case.")
 
+
 # construct system prompt
 def construct_prompt(data_name, X_train, Y_train):
     match data_name:
-        case "wine-red":
-            context = "Your job is to predict the quality of red wine based on its physicochemical properties.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0]) + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-        
-        case "wine-red-nf":
-            context = "Your job is to predict the quality of red wine based on some features.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the quality of the wine as a number between 0 and 1. It is very important to only output the quality number and nothing else.\n"
-            example = "Here is an example:\n" + "A red wine has " + narrate_data(features, X_train.iloc[0]) + "\nThe correct quality of this red wine is " + str(Y_train.iloc[0])
-        
         case synthetic_name if synthetic_name.startswith("synthetic_"):
             context = "Your job is to predict the target value based on some features.\n"
             features = X_train.columns
             #new_column_names = [f"X{i}" for i in range(10)]
             input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
             output_format = "Please output the target value as a number. It is very important to only output the target number and nothing else.\n"
-            example = "Here is an example:\n" + "A data point has " + narrate_data(features, X_train.iloc[0], case="json") + "\nThe correct target value of this data point is " + str(Y_train.iloc[0])
-
-        case "laptop_noduplicates":
-            context = "Your job is to predict the target value based on some features.\n"
-            features = X_train.columns
-            input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-            output_format = "Please output the target value as a number. It is very important to only output the target number and nothing else.\n"
-            example = "Here is an example:\n" + "A data point has " + narrate_data(features, X_train.iloc[0]) + "\nThe correct target value of this data point is " + str(Y_train.iloc[0])
-
-        case "multiplication":
-            context = "You are a calculator.\n"
-            features = X_train.columns  
-            input_format = "You will be given two numbers: " + ", ".join(features) + ".\n"
-            output_format = "Please output only the multiplication result as a number. Respond only with the numeric result, without any explanation or steps.\n"
-
         case _:
             print("Invalid data name.")
             exit()
-
-    #return context + input_format + output_format + example
     return context + input_format + output_format
 
 
@@ -190,7 +153,6 @@ def launch_batch_prediction(data_name, fine_tuned):
 
 
 # in case of fine-tuning, also need to create the fine-tuning training data and launch the job
-
 def create_finetune_training(data_name, X_train, Y_train):
     f = open("finetune_training_data/" + data_name + ".jsonl", "w")
     for i in range(X_train.shape[0]):
@@ -282,21 +244,11 @@ if __name__ == "__main__":
     name = input("Enter name: ")
     data_list = [name]
 
-    # task should generally be performed in the order of 1 to 5
-    task = input("Enter Task. \n1: launch batch prediction job \n2: launch fine-tuning job \n3: launch batch prediction job with fine-tuned model \n4: process batch prediction results \n5: report performance \n")
+    # task should generally be performed in the order of 1 to 4
+    task = input("Enter Task. \n1: launch fine-tuning job \n2: launch batch prediction job with fine-tuned model \n3: process batch prediction results \n4: report performance \n")
     match task:
-        case "1":
-            for data_name in data_list:
-                if os.path.isfile("batch_prediction_jobs/" + data_name + "_raw.jsonl"):
-                    print("Batch prediction job for this dataset already launched.")
-                else:
-                    X, Y = read_data(data_name)
-                    X_train, X_test, Y_train, Y_test = split_data(X, Y)
-                    create_batch_prediction(data_name, X_train, Y_train, X_test, "gpt-4o", False)
-                    #create_batch_prediction(data_name, X_train, Y_train, X_test, "gpt-4o-mini", False)
-                    launch_batch_prediction(data_name, False)
         
-        case "2":
+        case "1":
             for data_name in data_list:
                 if os.path.isfile("finetune_training_data/" + data_name + ".jsonl"):
                     print("Fine-tune already done for this dataset.")
@@ -307,7 +259,7 @@ if __name__ == "__main__":
                     create_finetune_training(data_name, X_train, Y_train)
                     launch_finetune_job(data_name)
         
-        case "3":
+        case "2":
             finetune_id = input("Enter fine-tuned job ID: \n")
             result = client.fine_tuning.jobs.retrieve(finetune_id)
             if result.error.code != None:
@@ -326,7 +278,7 @@ if __name__ == "__main__":
                         create_batch_prediction(data_name, X_train, Y_train, X_test, finetune_model, True)
                         launch_batch_prediction(data_name, True)
         
-        case "4":
+        case "3":
             batch_id = input("Enter batch ID: \n")
             result = client.batches.retrieve(batch_id)
             if result.status != "completed":
@@ -335,9 +287,6 @@ if __name__ == "__main__":
             else:
                 description = result.metadata["description"]
                 data_name, fine_tuned = description.split(" ")[3], description.split(" ")[6]
-                print(data_name)
-                print(fine_tuned)
-                #print(data_name, fine_tuned)
                 result_file = client.files.content(result.output_file_id)
                 # save results to file
                 if fine_tuned == "True":
@@ -350,29 +299,16 @@ if __name__ == "__main__":
                     print("something is wrong with description parsing.")
                     exit()
 
-        case "5":
+        case "4":
             for data_name in data_list:
                 X, Y = read_data(data_name)
                 X_train, X_test, Y_train, Y_test = split_data(X, Y)
                 #X_train, X_test, Y_train, Y_test = split_missing_data(X, Y)
-                # predictions without fine-tuning
-                
-                '''
-                f_raw = open("prediction_results/" + data_name + "_raw.jsonl", "r")
-                pred_raw = read_results(f_raw)
-                if pred_raw is not None and pred_raw.shape[0] == X_test.shape[0]:
-                    MAE, RMSE, MAPE = performance_eval(pred_raw["Prediction"], Y_test)
-                    print(f"LLM performance without fine-tuning on {data_name}: MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}")
-                else:
-                    print("Shape mismatch with the raw prediction results.")
-                '''
-                
+
                 # predictions with fine-tuning
                 f_finetune = open("prediction_results/" + data_name + "_finetune.jsonl", "r")
                 pred_finetune = read_results(f_finetune)
                 if pred_finetune is not None and pred_finetune.shape[0] == X_test.shape[0]:
-                    #output = performance_eval(pred_finetune["Prediction"], Y_test, X_test)
-                    #print(output)
                     MAE, RMSE, MAPE = performance_eval(pred_finetune["Prediction"], Y_test)
                     print(f"LLM performance with fine-tuning on {data_name}: MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}")
                 else:
@@ -382,3 +318,4 @@ if __name__ == "__main__":
             print("Invalid input. Exiting.")
 
             exit()
+
