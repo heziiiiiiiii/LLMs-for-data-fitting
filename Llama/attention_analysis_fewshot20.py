@@ -397,8 +397,8 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                 if feature_label.endswith('_value'):
                     feature_name = feature_label.replace('_value', '')
 
-                    # If we see X0 again, it means we're starting a new iteration
                     if feature_name == 'X0' and 'X0' in current_iteration:
+                    # if feature_name == 'X4' and 'X4' in current_iteration: # for shuffled column order data
                         feature_iterations.append(current_iteration)
                         current_iteration = {}
 
