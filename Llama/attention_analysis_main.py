@@ -370,6 +370,7 @@ def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, token
                     feature_name = feature_label.replace('_value', '')
 
                     if feature_name == 'X0' and 'X0' in current_iteration:
+                    # if feature_name == 'X4' and 'X4' in current_iteration: # for shuffled column order data
                         feature_iterations.append(current_iteration)
                         current_iteration = {}
 
