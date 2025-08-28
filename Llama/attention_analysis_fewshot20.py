@@ -126,6 +126,7 @@ def remove_leading_single_digits(token_attention_list):
 
     return cleaned
 
+# extract values' attention
 def extract_x0_to_x9_values_attention(filtered_tokens):
     if not filtered_tokens:
         return []
@@ -199,7 +200,7 @@ def extract_values_attention_by_feature_name(filtered_tokens, feature_names):
     return results
 '''
 
-
+# single datapoint analysis
 def analyze_single_datapoint(data_idx, X_test, X_train, Y_train, features, tokenizer, model, k=20):
     try:
         new_data = X_test.iloc[data_idx]
