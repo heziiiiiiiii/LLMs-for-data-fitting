@@ -23,88 +23,24 @@ def narrate_data(feature_names, feature_values):
         output += feature_names[i] + " " + str(feature_values[i]) + ", "
     return output
 
-# Construct the system prompt
-def construct_prompt_llama3(data_name, X_train, Y_train, k):
-    if data_name.startswith("synthetic_"):
-        context = "Your job is to predict the target value based on some features.\n"
-        features = X_train.columns
-        input_format = "You will be given {} features in total, including: ".format(len(features)) + ", ".join(features) + ".\n"
-        output_format = "Please output the target value as a number.It is very important to only output the target number and nothing else.\n"
-        examples = f"You will be given a total of {k} examples\n"
-            #for i in reversed(range(k)):
-        for i in range(k):
-            examples += (
-                #f"Here is example {k - i}:\n" +
-                f"Here is example {i+1}:\n" +
-                "A data point has " + narrate_data(features, X_train.iloc[i]) + "\n" +
-                "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
-            )
-        return context + input_format + output_format + examples
+'''
+def narrate_data(feature_names, feature_values, case):
+    if type(feature_values) == pd.Series:
+        feature_values = feature_values.values
+
+    if case == "base":
+        output = ''
+        for i in range(len(feature_names)):
+            output += feature_names[i] + " " + str(feature_values[i]) + ", "
+        return output.rstrip(", ") 
+
+    elif case == "json":
+        data_dict = {feature_names[i]: feature_values[i] for i in range(len(feature_names))}
+        return json.dumps(data_dict)
+
     else:
-        print("Invalid data name.")
-        exit()
-
-def get_llama3_prediction(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k):
-
-    prompt = construct_prompt_llama3(data_name, X_train.head(k), Y_train.head(k), k=k)
-    
-    '''
-    # Add the test input
-    test_features = narrate_data(feature_names, new_data, case='base')
-    prompt += f"<|start_header_id|>user<|end_header_id|>\nPredict the target for: {test_features}<|eot_id|>"
-    prompt += "<|start_header_id|>assistant<|end_header_id|>\n"
-    '''
-    
-    user_input = narrate_data(X_train.columns, new_data)
-
-    # Create the full prompt using the system and user prompts
-    prompt = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{prompt}<|eot_id|>" \
-                  f"<|start_header_id|>user<|end_header_id|>\n\n{user_input}<|eot_id|>" \
-                  f"<|start_header_id|>assistant<|end_header_id|>\n\n"
-    
-    # Tokenize
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048)
-    inputs = inputs.to(model.device)
-    
-    # Generate
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=20,      # Enough for a number
-            do_sample=False,        # Deterministic generation
-            temperature=0.01,       # temperature > 0 by llama
-            pad_token_id=tokenizer.eos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-        )
-    
-    # Decode the output
-    full_text = tokenizer.decode(outputs[0], skip_special_tokens=False)
-    
-    # Extract the generated part after the last assistant header
-    try:
-        parts = full_text.split("<|start_header_id|>assistant<|end_header_id|>")
-        if len(parts) > 1:
-            generated = parts[-1].strip()
-            
-            generated = generated.replace("<|eot_id|>", "").replace("<|end_of_text|>", "").strip()
-            
-            if generated:
-                lines = generated.split('\n')
-                first_line = lines[0].strip()
-                
-                try:
-                    return float(first_line)
-                except:
-                    numbers = re.findall(r"[-+]?\d*\.?\d+", generated)
-                    if numbers:
-                        return float(numbers[0])
-        
-        logging.warning(f"Could not extract prediction from: {full_text[-200:]}")
-        return np.nan
-        
-    except Exception as e:
-        logging.error(f"Error parsing prediction: {e}")
-        return np.nan
+        raise ValueError("Invalid case.")
+'''
 
 def get_llama3_prediction_chat_template(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k):
     """
@@ -117,19 +53,17 @@ def get_llama3_prediction_chat_template(data_name, X_train, Y_train, feature_nam
     
     #for i in reversed(range(k)):
     for i in range(k):
-        features_str = narrate_data(X_train.columns, X_train.iloc[i])
+        features_str = narrate_data(X_train.columns, X_train.iloc[i]) # use features_str = narrate_data(X_train.columns, X_train.iloc[i], case='json') for format variation
         target = Y_train.iloc[i]
         
         messages.append({"role": "user", "content": f"Predict the target for: {features_str}"})
         messages.append({"role": "assistant", "content": str(target)})
     
-    test_features = narrate_data(feature_names, new_data)
+    test_features = narrate_data(feature_names, new_data) # use test_features = narrate_data(feature_names, new_data, case='json') for format variation
     messages.append({"role": "user", "content": f"Predict the target for: {test_features}"})
     
     if hasattr(tokenizer, 'apply_chat_template'):
         prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    else:
-        return get_llama3_prediction(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k)
     
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=20480)
     inputs = inputs.to(model.device)
@@ -203,12 +137,6 @@ if __name__ == "__main__":
         
         if use_chat_template:
             prediction = get_llama3_prediction_chat_template(
-                data_name, X_train, Y_train, 
-                X_train.columns.tolist(), new_data, 
-                tokenizer, model, k
-            )
-        else:
-            prediction = get_llama3_prediction(
                 data_name, X_train, Y_train, 
                 X_train.columns.tolist(), new_data, 
                 tokenizer, model, k
