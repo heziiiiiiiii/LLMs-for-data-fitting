@@ -123,8 +123,6 @@ if __name__ == "__main__":
     print("Model loaded successfully")
     
     use_chat_template = hasattr(tokenizer, 'apply_chat_template')
-    #use_chat_template = None
-    print(f"\nUsing {'chat template' if use_chat_template else 'manual formatting'}")
     
     predictions = []
     valid_predictions = 0
