@@ -51,7 +51,7 @@ def get_llama3_prediction_chat_template(data_name, X_train, Y_train, feature_nam
         {"role": "system", "content": "Your job is to predict the target value based on some features. You will be given {} features in total, including: ".format(len(features)) + ", ".join(features) + ".\n Please output the target value as a number.It is very important to only output the target number and nothing else."}
     ]
     
-    #for i in reversed(range(k)):
+    #for i in reversed(range(k)): # for row order variation
     for i in range(k):
         features_str = narrate_data(X_train.columns, X_train.iloc[i]) # use features_str = narrate_data(X_train.columns, X_train.iloc[i], case='json') for format variation
         target = Y_train.iloc[i]
