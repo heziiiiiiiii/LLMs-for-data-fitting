@@ -21,31 +21,31 @@ def init_model(model_name):
             param_grid = None
         case "LassoRegression":
             model = Lasso(random_state=seed)
-            param_grid = {"alpha": [0.01, 0.1, 0.5, 1]}
+            param_grid = {"alpha": [0.01, 0.5, 1]}
         case "SVR":
             model = SVR()
             param_grid = {"C": [0.1, 1, 10, 100],
                           "epsilon": [0.1, 0.5, 1, 2],
-                          "kernel": ["linear", "poly", "rbf", "sigmoid"]}
+                          "kernel": ["linear", "rbf", "sigmoid"]}
         case "RandomForest":
             model = RandomForestRegressor(random_state=seed)
-            param_grid = {"n_estimators": [50, 100, 200, 300, 500],
-                          "max_depth": [5, 10, 20]}
-                          #"max_depth": [5, 10, 20, None]}
+            param_grid = {"n_estimators": [300, 500, 750, 1000, 1200],
+                          "max_features": [1, 0.8, 0.5, 0.2],
+                          "max_depth": [10, 20, None]}
         case "KNN":
             model = KNeighborsRegressor()
             param_grid = {
                 "n_neighbors": [3, 5, 7, 9, 11],
-                "weights": ["distance"],
+                "weights": ["distance", "uniform"],
                 "p": [1, 2]  # p=1 for Manhattan, p=2 for Euclidean
             }
         case "MLP":
             model = MLPRegressor(max_iter=5000, early_stopping=True, random_state=seed)
             param_grid = {
-                "hidden_layer_sizes": [(5,), (10,),(20,), (50,), (5, 5), (10, 5), (10, 10)],
+                "hidden_layer_sizes": [(5,), (20,), (50,), (5, 5), (10, 10), (100,100)],
                 "activation": ["tanh", "relu"],
                 "solver": ["adam", "sgd"],
-                "alpha": [0.005, 0.001, 0.01, 0.05, 0.1],
+                "alpha": [0.001, 0.005, 0.01, 0.05, 0.1],
                 "learning_rate": ["constant", "adaptive"]
             }
     
