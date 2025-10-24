@@ -31,7 +31,8 @@ def init_model(model_name):
             model = RandomForestRegressor(random_state=seed)
             param_grid = {"n_estimators": [300, 500, 750, 1000, 1200],
                           "max_features": [1, 0.8, 0.5, 0.2],
-                          "max_depth": [10, 20, None]}
+                          "max_depth": [5, 10, 20, None],
+                          "max_samples": [1, 0.8, 0.5, 0.2]}
         case "KNN":
             model = KNeighborsRegressor()
             param_grid = {
@@ -43,7 +44,7 @@ def init_model(model_name):
             model = MLPRegressor(max_iter=5000, early_stopping=True, random_state=seed)
             param_grid = {
                 "hidden_layer_sizes": [(5,), (20,), (50,), (5, 5), (10, 10), (100,100)],
-                "activation": ["tanh", "relu"],
+                "activation": ["identity", "tanh", "relu"],
                 "solver": ["adam", "sgd"],
                 "alpha": [0.001, 0.005, 0.01, 0.05, 0.1],
                 "learning_rate": ["constant", "adaptive"]
