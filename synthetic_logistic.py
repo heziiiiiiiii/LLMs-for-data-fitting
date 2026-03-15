@@ -9,20 +9,12 @@ def generate_logistic(n, seed=123456, noise=0, digit=None, column_order=None, co
 
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, 10)
-    print(beta)
-    # [0.12696983 0.96671784 0.26047601 0.89723652 0.37674972 0.33622174 0.45137647 0.84025508 0.12310214 0.5430262 ]
     y_latent = X @ beta
 
     np.random.seed(seed)
     eps = np.random.normal(0, noise, n)
     y_latent = y_latent + eps
 
-    '''
-    # center latent Y to balance classes
-    if center_latent:
-        y_latent = y_latent - y_latent.mean()
-    '''
-    
     # probability
     p = 1 / (1 + np.exp(-y_latent))
 
@@ -59,9 +51,6 @@ def generate_logistic(n, seed=123456, noise=0, digit=None, column_order=None, co
 
 
 def generate_all_logistic(n=5000, seed=123456, noise=0):
-    """Generate Friedman datasets with variations using for loops"""
-    
-    
     # Map dataset names to functions
     func_map = {
         'logistic': generate_logistic
@@ -104,7 +93,6 @@ def generate_all_logistic(n=5000, seed=123456, noise=0):
 
 
 if __name__ == "__main__":
-    print("Generating Original Benchmark Datasets")
     # Generate all datasets
     noise=0.1
     datasets = generate_all_logistic(n=5000, seed=123456, noise=noise)
