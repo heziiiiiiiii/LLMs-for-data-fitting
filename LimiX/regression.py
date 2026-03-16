@@ -17,45 +17,10 @@ if ROOT_DIR not in sys.path:
 from inference.predictor import LimiXPredictor
 from utility import *
 
-'''
-DATA_DIR = "/users/4/liu03021/data"
-if not os.path.exists("data"):
-    os.symlink(DATA_DIR, "data")
-    print(f"Created symbolic link: data -> {DATA_DIR}")
-
-relationship_type = input("Enter relationship type (e.g., linear, square): ")
-data_name = f"synthetic_data_{relationship_type}"
-
-X, Y = read_data(data_name)
-if X is None or Y is None:
-    exit()
-
-X_train, X_test, Y_train, Y_test = split_data(X, Y)
-
-X, Y = read_data(data_name)
-if X is None or Y is None:
-    exit()
-X_train, X_test, Y_train, Y_test = split_data(X, Y)
-
-data_device = f'cuda:0'
-model_path = hf_hub_download(repo_id="stableai-org/LimiX-16M", filename="LimiX-16M.ckpt", local_dir=".")
-
-model = LimiXPredictor(device=torch.device('cuda'), model_path=model_path, inference_config='config/reg_default_noretrieval.json')
-y_pred = model.predict(X_train, Y_train, X_test, task_type="Regression")    
-
-# Compute RMSE and R²
-y_pred = y_pred.to('cpu').numpy()
-
-mae, rmse, mape = performance_eval(y_pred, Y_test)
-
-print(f'RMSE: {rmse}')
-print(f'MAE: {mae}')
-'''
-
 from pathlib import Path
 
 relationship_type = input("Enter relationship type (e.g., linear, square): ")
-DATA_DIR = Path(f"/users/4/liu03021/tabpfn_data/{relationship_type}")
+DATA_DIR = Path(f"Path/{relationship_type}")
 k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
 
 rows = []
@@ -88,8 +53,6 @@ for csv_path in files:
     data_device = f'cuda:0'
     model_path = hf_hub_download(repo_id="stableai-org/LimiX-16M", filename="LimiX-16M.ckpt", local_dir=".")
     model = LimiXPredictor(device=torch.device('cuda'), model_path=model_path, inference_config='config/reg_default_noretrieval.json')
-    #y_pred = model.predict(X_train, Y_train, X_test, task_type="Regression")    
-    #y_pred = y_pred.to('cpu').numpy()
     
     # Normalize Y 
     y_mean = Y_train.mean()
@@ -110,7 +73,7 @@ for csv_path in files:
         task_type="Regression"
     )
     
-    # ADDED: Denormalize predictions back to original scale
+    # Denormalize predictions back to original scale
     y_pred = y_pred_normalized.to('cpu').numpy()
     y_pred_original = y_pred * y_std + y_mean
     
@@ -120,10 +83,10 @@ for csv_path in files:
     rows.append({"csv": str(csv_path), "mae": MAE, "rmse": RMSE, "mape": MAPE})
 
 df = pd.DataFrame(rows)
-DATA_DIR_output = Path("/users/4/liu03021/LimiX/results")
+DATA_DIR_output = Path(Path)
 if k==4000:
-    df.to_csv(DATA_DIR_output / f"results_{relationship_type}_normalize2.csv", index=False)
-    df[["mae", "rmse", "mape"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}_normalize2.csv")
+    df.to_csv(DATA_DIR_output / f"results_{relationship_type}.csv", index=False)
+    df[["mae", "rmse", "mape"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}.csv")
 else:
-    df.to_csv(DATA_DIR_output / f"results_{relationship_type}_fewshots{k}_normalize2.csv", index=False)
-    df[["mae", "rmse", "mape"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}_fewshots{k}_normalize2.csv")
+    df.to_csv(DATA_DIR_output / f"results_{relationship_type}_fewshots{k}.csv", index=False)
+    df[["mae", "rmse", "mape"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}_fewshots{k}.csv")
