@@ -93,66 +93,11 @@ def get_qwen3_prediction_chat_template(data_name, X_train, Y_train, feature_name
         if numbers:
             return float(numbers[0])
         return np.nan
-'''
-def get_qwen3_prediction_chat_template(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k):
-    """
-    Alternative method using the tokenizer's built-in chat template
-    """
-    features = X_train.columns
-    messages = [
-        {"role": "system", "content": "Your job is to predict the target value based on some features. You will be given {} features in total, including: ".format(len(features)) + ", ".join(features) + ".\n Please output the target value as a number.It is very important to only output the target number and nothing else."}
-    ]
-    
-    #for i in reversed(range(k)):
-    for i in range(k):
-        #features_str = narrate_data(X_train.columns, X_train.iloc[i])
-        features_str = narrate_data(X_train.columns, X_train.iloc[i], case='base')
-        target = Y_train.iloc[i]
-        
-        messages.append({"role": "user", "content": f"Predict the target for: {features_str}"})
-        messages.append({"role": "assistant", "content": str(target)})
-    
-    test_features = narrate_data(feature_names, new_data, case='base')
-    messages.append({"role": "user", "content": f"Predict the target for: {test_features}"})
-    
-    if hasattr(tokenizer, 'apply_chat_template'):
-        prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
-        
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=20480)
-    inputs = inputs.to(model.device)
-    
-    prompt_length = inputs['input_ids'].shape[1]
-    
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=20,
-            do_sample=False,
-            temperature=0.01,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-    
-    generated_tokens = outputs[0][prompt_length:]
-    generated_text = tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
-    
-    generated_text = generated_text.replace("<|eot_id|>", "").strip()
-    
 
-    lines = generated_text.split('\n')
-    first_line = lines[0].strip() if lines else ""
-    
-    try:
-        return float(first_line)
-    except:
-        numbers = re.findall(r"[-+]?\d+\.?\d*", first_line)
-        if numbers:
-            return float(numbers[0])
-        return np.nan
-'''
 if __name__ == "__main__":
     # Define experiments
-    data_list = ["synthetic_data_original_w_corr_w_noise_diff_name", "synthetic_data_original_w_corr_w_noise_shuffle"]
-    k_list = [10, 20]
+    data_list = []
+    k_list = []
     
     # Load model once
     model_name = "Qwen/Qwen3-4B"
