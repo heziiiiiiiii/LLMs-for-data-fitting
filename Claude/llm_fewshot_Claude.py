@@ -24,7 +24,6 @@ PRED_SCHEMA = {
     "additionalProperties": False
 }
 
-# given a single data point, "narrate" its feature values and feature names as a string
 def narrate_data(feature_names, feature_values, case):
     if type(feature_values) == pd.Series:
         feature_values = feature_values.values
@@ -48,24 +47,19 @@ def narrate_data(feature_names, feature_values, case):
     else:
         raise ValueError("Invalid case.")
 
-# construct system prompt
-# system prompt consists of task, input format, output format, and one example constructed from the first training example
-
 def construct_prompt(data_name, X_train, Y_train, k):
     if data_name.startswith("synthetic_"):
         context = "Your job is to predict the target value based on some features.\n"
         features = X_train.columns
-        #new_column_names = [f"X{i}" for i in range(10)]
         input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
         output_format = "Please output the target value as a number. It is very important to only output the target number and nothing else.\n"
         examples = f"You will be given a total of {k} examples\n"
-        prompt = f"The {k} examples presented above are not in any particular order.\n"
         #for i in reversed(range(k)):
         for i in range(k):
             examples += (
                 #f"Here is example {k - i}:\n" +
                 f"Here is example {i+1}:\n" +
-                "A data point has " + narrate_data(features, X_train.iloc[i], case="json") + "\n" +
+                "A data point has " + narrate_data(features, X_train.iloc[i], case="base") + "\n" +
                 "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
             )
 
@@ -73,13 +67,8 @@ def construct_prompt(data_name, X_train, Y_train, k):
         print("Invalid data name.")
         exit()
 
-    #return context + input_format + output_format + examples + prompt
     return context + input_format + output_format + examples
 
-# using batch mode of OpenAI
-# prepare batch prediction file
-# gpt_model is either a foundation model name or a fine-tuned model ID
-# fine_tuned is true or false
 
 def launch_batch_prediction_claude_structured(data_name, X_train, Y_train, X_test, model_name, k):
     sys_prompt = construct_prompt(data_name, X_train, Y_train, k)
@@ -88,7 +77,7 @@ def launch_batch_prediction_claude_structured(data_name, X_train, Y_train, X_tes
     requests = []
     for i in range(X_test.shape[0]):
         custom_id = str(i + 1)
-        user_content = narrate_data(features, X_test.iloc[i], case="json")
+        user_content = narrate_data(features, X_test.iloc[i], case="base")
 
         requests.append({
             "custom_id": custom_id,
@@ -168,7 +157,7 @@ def retrieve_batch_results_claude(batch_id, Y_test):
 
             
 if __name__ == "__main__":
-    relationship_type = input("Enter relationship type (e.g., 'linear', 'square', 'exp', etc.): ")
+    relationship_type = input("Enter relationship type (e.g., 'linear' etc.): ")
     data_name = f"synthetic_data_{relationship_type}"
     k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
     model_name = "claude-sonnet-4-5"
