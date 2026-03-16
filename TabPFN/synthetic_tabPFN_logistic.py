@@ -16,12 +16,6 @@ def generate_logistic(n, seed=123456, noise=0, digit=None, column_order=None, co
     eps = np.random.normal(0, noise, n)
     y_latent = y_latent + eps
 
-    '''
-    # center latent Y to balance classes
-    if center_latent:
-        y_latent = y_latent - y_latent.mean()
-    '''
-    
     # probability
     p = 1 / (1 + np.exp(-y_latent))
 
@@ -57,11 +51,6 @@ def generate_logistic(n, seed=123456, noise=0, digit=None, column_order=None, co
     return data, col_names
 
 def generate_all_logistic_100x(n=5000, n_datasets=100, base_seed=123456):
-    """
-    Generate 100 datasets for logistic and variation
-    Simple version with nested loops
-    """
-    
     # Map to functions
     func_map = {
         'logistic': generate_logistic
