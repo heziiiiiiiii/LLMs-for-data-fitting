@@ -167,41 +167,6 @@ def extract_values_attention_by_feature_name(filtered_tokens, feature_names, k=1
 
     return results
 
-'''
-def extract_x0_to_x9_values_attention(filtered_tokens):
-    """
-    Groups consecutive tokens into X0_value to X9_value repeatedly,
-    summing their attention scores. Skips groups with only 1 token.
-    """
-    if not filtered_tokens:
-        return []
-
-    filtered_tokens = sorted(filtered_tokens, key=lambda x: x[0])
-    results = []
-    current_group = [filtered_tokens[0]]
-    x_counter = 0
-
-    for i in range(1, len(filtered_tokens)):
-        prev_pos = filtered_tokens[i - 1][0]
-        curr_pos = filtered_tokens[i][0]
-
-        if curr_pos == prev_pos + 1:
-            current_group.append(filtered_tokens[i])
-        else:
-            if len(current_group) > 1:
-                total_attention = sum(attn for _, _, attn in current_group)
-                results.append((f"X{x_counter}_value", total_attention))
-                x_counter = (x_counter + 1) % 10
-            current_group = [filtered_tokens[i]]
-
-    # final group
-    if len(current_group) > 1:
-        total_attention = sum(attn for _, _, attn in current_group)
-        results.append((f"X{x_counter}_value", total_attention))
-
-    return results
-'''
-
 def sum_xn_values(xn_attention_list):
     """
     Sums attention scores for each Xn_value label across multiple chunks.
