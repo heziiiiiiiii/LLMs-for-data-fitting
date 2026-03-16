@@ -29,10 +29,8 @@ def performance_eval(Y_pred, Y_test):
 
     return MAE, RMSE, acc
 
-
-
 relationship_type = input("Enter relationship type (e.g., linear, square): ")
-DATA_DIR = Path(f"/users/4/liu03021/TabPFN_data_update/{relationship_type}")
+DATA_DIR = Path(f"Path/{relationship_type}")
 k = int(input("Enter the number of examples (k) to use for few-shot learning: "))
 
 rows = []
@@ -74,10 +72,10 @@ for csv_path in files:
     rows.append({"csv": str(csv_path), "mae": MAE, "rmse": RMSE, "accuracy": acc, "predictions": json.dumps([int(p) for p in y_pred])})
 
 df = pd.DataFrame(rows)
-DATA_DIR_output = Path("/users/4/liu03021/LimiX/results")
+DATA_DIR_output = Path(Path)
 if k==4000:
-    df.to_csv(DATA_DIR_output / f"results_{relationship_type}2.csv", index=False)
-    df[["mae", "rmse", "accuracy"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}2.csv")
+    df.to_csv(DATA_DIR_output / f"results_{relationship_type}.csv", index=False)
+    df[["mae", "rmse", "accuracy"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}.csv")
 else:
-    df.to_csv(DATA_DIR_output / f"results_{relationship_type}2_fewshots{k}.csv", index=False)
-    df[["mae", "rmse", "accuracy"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}2_fewshots{k}.csv")
+    df.to_csv(DATA_DIR_output / f"results_{relationship_type}_fewshots{k}.csv", index=False)
+    df[["mae", "rmse", "accuracy"]].describe().to_csv(DATA_DIR_output / f"summary_statistics_{relationship_type}_fewshots{k}.csv")
