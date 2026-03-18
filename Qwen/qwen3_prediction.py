@@ -38,54 +38,52 @@ def narrate_data(feature_names, feature_values, case):
         raise ValueError("Invalid case.")
 
 def get_qwen3_prediction_chat_template(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k):
+    """
+    Alternative method using the tokenizer's built-in chat template
+    """
     features = X_train.columns
-
-    # Build system prompt matching construct_prompt style
-    context = "Your job is to predict the target value based on some features.\n"
-    input_format = "You will be given " + str(len(features)) + " features in total, including: " + ", ".join(features) + ".\n"
-    output_format = "Please output the target value as a number. It is very important to only output the target number and nothing else.\n"
+    messages = [
+        {"role": "system", "content": "Your job is to predict the target value based on some features. You will be given {} features in total, including: ".format(len(features)) + ", ".join(features) + ".\n Please output the target value as a number.It is very important to only output the target number and nothing else."}
+    ]
     
-    examples = f"You will be given a total of {k} examples\n"
     #for i in reversed(range(k)):
     for i in range(k):
-        examples += (
-            #f"Here is example {k - i}:\n" +
-            f"Here is example {i+1}:\n" +
-            "A data point has " + narrate_data(features, X_train.iloc[i], case="base") + "\n" +
-            "The correct target value of this data point is " + str(Y_train.iloc[i]) + ".\n"
-        )
-
-    system_content = context + input_format + output_format + examples
-
-    # Test query
-    user_content = narrate_data(features, new_data, case="base")
-
-    messages = [
-        {"role": "system", "content": system_content},
-        {"role": "user",   "content": user_content},
-    ]
-
-    prompt = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
-    )
-
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=20480).to(model.device)
+        #features_str = narrate_data(X_train.columns, X_train.iloc[i])
+        features_str = narrate_data(X_train.columns, X_train.iloc[i], case='base')
+        target = Y_train.iloc[i]
+        
+        messages.append({"role": "user", "content": f"Predict the target for: {features_str}"})
+        messages.append({"role": "assistant", "content": str(target)})
+    
+    test_features = narrate_data(feature_names, new_data, case='base')
+    messages.append({"role": "user", "content": f"Predict the target for: {test_features}"})
+    
+    if hasattr(tokenizer, 'apply_chat_template'):
+        prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=20480)
+    inputs = inputs.to(model.device)
+    
     prompt_length = inputs['input_ids'].shape[1]
-
+    
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
             max_new_tokens=20,
             do_sample=False,
+            temperature=0.01,
             pad_token_id=tokenizer.eos_token_id,
         )
-
+    
     generated_tokens = outputs[0][prompt_length:]
     generated_text = tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
+    
+    generated_text = generated_text.replace("<|eot_id|>", "").strip()
+    
 
     lines = generated_text.split('\n')
     first_line = lines[0].strip() if lines else ""
-
+    
     try:
         return float(first_line)
     except:
@@ -93,7 +91,7 @@ def get_qwen3_prediction_chat_template(data_name, X_train, Y_train, feature_name
         if numbers:
             return float(numbers[0])
         return np.nan
-
+        
 if __name__ == "__main__":
     # Define experiments
     data_list = []
