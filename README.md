@@ -51,7 +51,7 @@ Below are key resources and documentation used for implementation.
 
 ### TabPFN (`TabPFN/`)
 - `synthetic_TabPFN_linear.py`: Code to simulate linear DGP datasets for TabPFN.
-- `synthetic_TabPFN_original.py`: Code to simulate nonlinear DGP datasets for TabPFN.
+- `synthetic_TabPFN_nonlinear.py`: Code to simulate nonlinear DGP datasets for TabPFN.
 - `synthetic_TabPFN_logistic.py`: Code to simulate logistic DGP datasets for TabPFN.
 - `tabpfn.ipynb`: In-context learning (ICL) experiments using TabPFN.
 - `results_summary.ipynb`: Code to aggregate results.
@@ -66,7 +66,7 @@ Below are key resources and documentation used for implementation.
 ### Utilities
 - `synthetic_linear.py`: Generates synthetic datasets with a linear DGP.
 - `synthetic_logistic.py`: Generates synthetic datasets with a logistic DGP.
-- `synthetic_original.py`: Generates synthetic datasets with a nonlinear DGP.
+- `synthetic_nonlinear.py`: Generates synthetic datasets with a nonlinear DGP.
 - `utility.py` : Data loading and evaluation utilities.
 
 
