@@ -32,11 +32,16 @@ Below are key resources and documentation used for implementation.
 - `llm.py`: Supervised fine-tuning experiments using GPT4o-mini.
 - `llm_fewshot.py`: In-context learning (ICL) experiments using GPT4o-mini.
 
+### Claude Models (`Claude/`)
+- `llm_fewshot_Claude.py`: In-context learning (ICL) experiments using the Claude API.
+
+### Grok Models (`Grok/`)
+- `llm_fewshot_grok.py`: ICL experiments using the Grok API.
+
 ### LLaMA Models (`Llama/`)
 - `llama3_prediction.py`: In-context learning (ICL) experiments using LLaMA-3-8B-Instruct.
 - `attention_analysis_main.py`: Attention mechanism analysis for ICL10.
 - `attention_analysis_fewshot20.py`: Attention mechanism analysis for ICL20.
-- `plot.ipynb`: Visualizations of attention patterns.
 
 ### TabPFN (`TabPFN/`)
 - `synthetic_TabPFN_linear.py`: Code to simulate linear DGP datasets for TabPFN.
