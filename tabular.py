@@ -41,13 +41,16 @@ def init_model(model_name):
                 "p": [1, 2]  # p=1 for Manhattan, p=2 for Euclidean
             }
         case "MLP":
-            model = MLPRegressor(max_iter=5000, early_stopping=True, random_state=seed)
+            model = MLPRegressor(max_iter=2000, early_stopping=True, random_state=seed)
             param_grid = {
-                "hidden_layer_sizes": [(5,), (20,), (50,), (5, 5), (10, 10), (100,100)],
-                "activation": ["identity", "tanh", "relu"],
-                "solver": ["adam", "sgd"],
+                "hidden_layer_sizes": [(), (20,), (64,), (64,64), (100,100), (128,128)],
+                "activation": ["identity", "tanh", "relu", "logistic"],
+                "solver": ["adam", "sgd", "lbfgs"],
                 "alpha": [0.001, 0.005, 0.01, 0.05, 0.1],
-                "learning_rate": ["constant", "adaptive"]
+                "learning_rate": ["constant", "adaptive"].
+                "learning_rate_init": [0.001, 3e-4, 1e-4],
+                "n_iter_no_change": [10, 20, 30],
+                "validation_fraction": [0.1, 0.15, 0.2]
             }
     
     return model, param_grid
@@ -59,7 +62,6 @@ def train_eval_model(model, param_grid, X_train, Y_train, X_test, Y_test):
     if param_grid is not None:
         cv = KFold(n_splits=5, shuffle=True, random_state=seed)
         est = GridSearchCV(model, param_grid, scoring="neg_mean_squared_error", cv=cv)
-        #est = GridSearchCV(model, param_grid, scoring = "neg_mean_squared_error", cv = 5)
         est.fit(X_train, Y_train)
         best_params = est.best_params_
     else:
