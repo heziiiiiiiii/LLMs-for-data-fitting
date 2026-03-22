@@ -15,24 +15,12 @@ from utility import *
 seed = 123456
 np.random.seed(seed)
 
-# -----------------------
-# Baseline + metrics
-# -----------------------
 def majority_vote_predict(y_train, n_test: int):
-    """
-    Majority-class baseline (predicts the most frequent class in y_train).
-    """
     # Ensure y_train is 1D array
     y_train = np.asarray(y_train).astype(int).ravel()
     majority_class = int(np.round(y_train.mean()) >= 0.5)  # works for 0/1
     return np.full(shape=(n_test,), fill_value=majority_class, dtype=int), majority_class
 
-'''
-def flip_rate(y_pred_base, y_pred_variant):
-    y_pred_base = np.asarray(y_pred_base).astype(int).ravel()
-    y_pred_variant = np.asarray(y_pred_variant).astype(int).ravel()
-    return float(np.mean(y_pred_base != y_pred_variant))
-'''
 def init_model_logistic(model_name):
     match model_name:
         case "MajorityVote":
@@ -119,7 +107,6 @@ def train_eval_model_logistic(model, param_grid, X_train, Y_train, X_test, Y_tes
 
 
 if __name__ == "__main__":
-    #prediction_results_df = pd.DataFrame(columns=["MAPC", "MAPC_std", "MAPC_max"], index=["LinearRegression", "LassoRegression", "SVR", "RandomForest", "KNN", "MLP"])
     results_df = pd.DataFrame(columns=["acc", "best_paras"], index=["MajorityVote", "LogisticRegression", "SVC", "RandomForest", "KNN", "MLP"])
     relationship_type = input("Enter relationship type (e.g., 'linear', 'square', 'exp', etc.): ")
     name = f"synthetic_data_{relationship_type}"
@@ -140,8 +127,8 @@ if __name__ == "__main__":
         print(f"The range of is {r}")
         prediction = {}
         
-        for model_name in ["MLP"]:
-        #for model_name in ["MajorityVote", "LogisticRegression", "SVC", "RandomForest", "KNN", "MLP"]:
+        #for model_name in ["MLP"]:
+        for model_name in ["MajorityVote", "LogisticRegression", "SVC", "RandomForest", "KNN", "MLP"]:
             model, param_grid = init_model_logistic(model_name)
             est, Y_pred, acc, best_params = train_eval_model_logistic(model, param_grid, X_train, Y_train, X_test, Y_test)
 
@@ -151,6 +138,6 @@ if __name__ == "__main__":
             results_df.loc[model_name] = [acc, str(best_params)]
             print(f"Model: {model_name}, acc: {acc}, Best Parameters: {best_params}")
             
-        #file_name = f"performance_data/{data_name}_performance.csv"
-        #results_df.to_csv(file_name, index=True)
+        file_name = f"performance_data/{data_name}_performance.csv"
+        results_df.to_csv(file_name, index=True)
 
