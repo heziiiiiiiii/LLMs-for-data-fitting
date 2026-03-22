@@ -44,6 +44,7 @@ Below are key resources and documentation used for implementation.
 - `llama3_prediction.py`: In-context learning (ICL) experiments using LLaMA-3-8B-Instruct.
 - `attention_analysis_main.py`: Attention mechanism analysis for ICL10.
 - `attention_analysis_fewshot20.py`: Attention mechanism analysis for ICL20.
+- `llama3_prediction_outlier.py`: Outliers analysis.
 
 ### Qwen Models (`Qwen/`)
 - `qwen3_prediction.py`: In-context learning (ICL) experiments using Qwen-3-4B.
