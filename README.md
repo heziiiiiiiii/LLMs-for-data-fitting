@@ -21,7 +21,7 @@ Below are key resources and documentation used for implementation.
 #### Qwen-3-4B
 - Model page (Hugging Face): https://huggingface.co/Qwen
 
-### Tabular Foundation Model
+### Tabular Foundation Models
 #### TabPFN 
 - Official GitHub repository: [https://github.com/automl/TabPFN](https://github.com/PriorLabs/TabPFN)
 #### LimiX
