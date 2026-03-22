@@ -10,10 +10,16 @@ Below are key resources and documentation used for implementation.
 #### GPT-4o-mini
 - OpenAI API documentation: https://platform.openai.com/docs
 - Fine-tuning guide: [https://platform.openai.com/docs/guides/fine-tuning](https://platform.openai.com/docs/guides/supervised-fine-tuning)
+#### Claude
+- Anthropic API documentation: https://docs.anthropic.com
+#### Grok
+- xAI API documentation: https://docs.x.ai
 
 ### Open-weight LLMs
-### LLaMA-3-8B-Instruct
+#### LLaMA-3-8B-Instruct
 - Inference code (Hugging Face): https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+#### Qwen
+- Model page (Hugging Face): https://huggingface.co/Qwen
 
 ### Tabular Foundation Model
 #### TabPFN 
@@ -33,7 +39,9 @@ Below are key resources and documentation used for implementation.
 - `plot.ipynb`: Visualizations of attention patterns.
 
 ### TabPFN (`TabPFN/`)
-- `synthetic_TabPFN.py`: Code to simulate synthetic datasets for TabPFN.
+- `synthetic_TabPFN_linear.py`: Code to simulate linear DGP datasets for TabPFN.
+- synthetic_TabPFN_original.py: Code to simulate non-linear DGP datasets for TabPFN.
+- synthetic_TabPFN_logistic.py: Code to simulate logistic DGP datasets for TabPFN.
 - `tabpfn.ipynb`: In-context learning (ICL) experiments using TabPFN.
 - `results_summary.ipynb`: Code to aggregate results.
 
