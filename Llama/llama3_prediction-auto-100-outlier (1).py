@@ -46,223 +46,6 @@ def narrate_data(feature_names, feature_values, case):
     else:
         raise ValueError("Invalid case.")
 
-'''
-def reorder_by_residual(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Reorder the first k training rows using residual/noise magnitude
-    from the matching dataset column in noise_df.
-
-    Placement rule:
-      - largest residual -> last position
-      - 2nd largest -> first position
-      - 3rd largest -> second last
-      - 4th largest -> second position
-      - ...
-    """
-    # get the noise values corresponding to these training rows
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-    
-    # sort from largest residual to smallest
-    ranked = np.argsort(abs(resid))[::-1]
-
-#     new_order = [None] * len(ranked)
-#     front, back = 0, len(ranked) - 1
-
-#     for i, idx in enumerate(ranked):
-#         if i % 2 == 0:
-#             new_order[back] = idx
-#             back -= 1
-#         else:
-#             new_order[front] = idx
-#             front += 1
-    new_order = [0,1,2,3,4,5,6,7,8,9]
-    new_order.append(ranked[0])
-    new_order.remove(ranked[0])
-
-    return new_order
-'''
-def reorder_by_residual(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Reorder the first k training rows using residual/noise magnitude
-    from the matching dataset column in noise_df.
-
-    Placement rule:
-      - largest residual -> last position
-      - 2nd largest -> first position
-      - 3rd largest -> second last
-      - 4th largest -> second position
-      - ...
-    """
-    # get the noise values corresponding to these training rows
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-    
-    # sort from largest residual to smallest
-    ranked = np.argsort(resid)[::-1]
-
-    new_order = [None] * len(ranked)
-    front, back = 0, len(ranked) - 1
-
-    for i, idx in enumerate(ranked):
-        if i % 2 == 0:
-            new_order[back] = idx
-            back -= 1
-        else:
-            new_order[front] = idx
-            front += 1
-
-    return new_order
-
-def move_largest_residual_to_end(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Only move the single point with the largest residual among first k rows to the end.
-    Keep all other points in the same relative order.
-    """
-    # get residuals for first k rows
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-
-    # find index (within first k) of largest residual
-    max_idx = np.argmax(np.abs(resid))
-
-    # original order
-    order = list(range(k))
-
-    # swap with last position
-    order[max_idx], order[k - 1] = order[k - 1], order[max_idx]
-
-    return order
-
-def move_nearest_residual_to_end(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Among the first k rows:
-    - Take the last datapoint (position k-1)
-    - Find the point whose residual is closest to it
-    - Swap those two
-    """
-    # get residuals for first k rows
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-    # residual of the last datapoint
-    target_resid = resid[k - 1]
-
-    # compute distance to last residual
-    diff = np.abs(resid - target_resid)
-
-    # ignore the last point itself
-    diff[k - 1] = np.inf
-
-    # find closest residual
-    nearest_idx = np.argmin(diff)
-
-    # original order
-    order = list(range(k))
-
-    # swap with last position
-    order[nearest_idx], order[k - 1] = order[k - 1], order[nearest_idx]
-
-    return order
-
-def move_smallest_to_middle_largest_to_end(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Among the first k rows:
-    - move the point with the smallest absolute residual to the middle position
-    - move the point with the largest absolute residual to the end
-    - keep all other points in the same relative order
-    """
-    # get residuals 
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-
-    # rank residuals by absolute value
-    ranked = np.argsort(np.abs(resid))
-
-    # index of smallest and largest residual
-    min_idx = ranked[0]
-    max_idx = ranked[-1]
-
-    # keep all other indices in original order
-    idx_keep = [i for i in range(k) if i not in (min_idx, max_idx)]
-
-    middle_pos = 4
-
-    # build new order
-    order = [None] * k
-
-    # fill positions before middle
-    order[:middle_pos] = idx_keep[:middle_pos]
-
-    # put smallest residual point in middle
-    order[middle_pos] = min_idx
-
-    # fill positions after middle up to the last
-    order[middle_pos + 1 : k - 1] = idx_keep[middle_pos:]
-
-    # put largest residual point at the end
-    order[k - 1] = max_idx
-    return order
-
-
-def move_smallest_to_end_largest_to_middle(X_train, Y_train, dataset_name, noise_df, k):
-
-    # get residuals 
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-
-    # rank residuals by absolute value
-    ranked = np.argsort(np.abs(resid))
-
-    # index of smallest and largest residual
-    min_idx = ranked[0]
-    max_idx = ranked[-1]
-
-    # keep all other indices in original order
-    idx_keep = [i for i in range(k) if i not in (min_idx, max_idx)]
-
-    middle_pos = 4
-
-    # build new order
-    order = [None] * k
-
-    # fill positions before middle
-    order[:middle_pos] = idx_keep[:middle_pos]
-
-    # put largest residual point in middle
-    order[middle_pos] = max_idx
-
-    # fill positions after middle up to the last
-    order[middle_pos + 1 : k - 1] = idx_keep[middle_pos:]
-
-    # put smallest residual point at the end
-    order[k - 1] = min_idx
-    return order
-
-def reorder_by_residual_reverse(X_train, Y_train, dataset_name, noise_df, k):
-    """
-    Reorder the first k training rows using residual/noise magnitude
-    from the matching dataset column in noise_df.
-
-    Placement rule:
-      - smallest residual -> last position
-      - 2nd smallest -> first position
-      - 3rd smallest -> second last
-      - 4th smallest -> second position
-      - ...
-    """
-
-    resid = noise_df.loc[X_train.index[:k], dataset_name].to_numpy()
-
-    # sort from smallest residual to largest
-    ranked = np.argsort(np.abs(resid))
-
-    new_order = [None] * len(ranked)
-    front, back = 0, len(ranked) - 1
-
-    for i, idx in enumerate(ranked):
-        if i % 2 == 0:
-            new_order[back] = idx
-            back -= 1
-        else:
-            new_order[front] = idx
-            front += 1
-    
-    return new_order
-
 def swap_global_residual_to_middle(X_train, Y_train, dataset_name, noise_df, k):
     """
     - find global largest residual (over all rows)
@@ -325,20 +108,12 @@ def get_llama3_prediction_chat_template(X_train, Y_train, feature_names, new_dat
     messages = [
         {"role": "system", "content": "Your job is to predict the target value based on some features. You will be given {} features in total, including: ".format(len(features)) + ", ".join(features) + ".\n Please output the target value as a number.It is very important to only output the target number and nothing else."}
     ]
-    
-    #new_order = reorder_by_residual(X_train.iloc[:k], Y_train.iloc[:k])
-    #new_order = reorder_by_residual(X_train, Y_train, dataset_name, noise_df, k)
-    #print(new_order)
-    #new_order = [0, 2, 3, 4, 1, 5, 6, 7, 8, 9] #data 0012
-    #new_order = move_nearest_residual_to_end(X_train, Y_train, dataset_name, noise_df, k)
+
     #new_order = [0,1,2,3,4,5,6,7,8,9]
-    #new_order = [9,8,7,6,5,4,3,2,1,0]
+    #new_order = swap_global_residual_to_middle(X_train, Y_train, dataset_name, noise_df, k)
     #new_order = [0,1,2,3,9,5,6,7,8,4]
-    #new_order = move_smallest_to_end_largest_to_middle(X_train, Y_train, dataset_name, noise_df, k)
-    #new_order = reorder_by_residual_reverse(X_train, Y_train, dataset_name, noise_df, k)
     new_order = swap_global_residual_then_4and9(X_train, Y_train, dataset_name, noise_df, k)
     for i in new_order:
-        #features_str = narrate_data(X_train.columns, X_train.iloc[i])
         features_str = narrate_data(X_train.columns, X_train.iloc[i], case='base')
         target = Y_train.iloc[i]
         
@@ -386,12 +161,12 @@ def get_llama3_prediction_chat_template(X_train, Y_train, feature_names, new_dat
     
 if __name__ == "__main__":
     # ── configuration ──
-    relationship_type = 'linear_exp_all_positive2'
-    DATA_DIR = Path(f"/users/4/liu03021/TabPFN_data_update/{relationship_type}")
-    k = 10
+    relationship_type = []
+    DATA_DIR = Path()
+    k = []
 
     model_name = "meta-llama/Meta-Llama-3-8B-Instruct"
-    cache_dir  = "/users/4/liu03021/llama3_3"
+    cache_dir  = "path/llama3_3"
 
     # ── load model once ──
     logging.info("Loading tokenizer and model …")
@@ -410,12 +185,10 @@ if __name__ == "__main__":
     os.makedirs("llama3_predictions", exist_ok=True)
 
     files = sorted(DATA_DIR.glob("dataset_*.csv"))[:20]
-    #files = sorted(DATA_DIR.glob("dataset_*.csv"))[14:15]
-    #logging.info(f"Found {len(files)} datasets in {DATA_DIR}")
 
     rows = []  # will hold one summary row per dataset
     
-    noise_df = pd.read_csv("TabPFN_data_update/linear_exp_all_positive2/noise.csv")
+    noise_df = pd.read_csv("path/noise.csv")
 
     for file_idx, filepath in enumerate(files):
         dataset_name = filepath.stem
@@ -451,19 +224,6 @@ if __name__ == "__main__":
                 logging.info(f"  {i+1}/{len(X_test)} done")
         
         mae, rmse, mape = performance_eval(predictions, Y_test)
-        '''
-        elapsed = time.time() - start
-
-        valid_mask = ~np.isnan(predictions)
-        n_valid = int(np.sum(valid_mask))
-
-        if n_valid > 0:
-            valid_preds = np.array(predictions)[valid_mask]
-            valid_true  = np.array(Y_test)[valid_mask]
-            mae, rmse, mape = performance_eval(list(valid_preds), list(valid_true))
-        else:
-            mae = rmse = mape = np.nan
-        '''
         # Save per-test prediction results
         results_df = pd.DataFrame({
                 "Prediction": predictions,
@@ -471,7 +231,7 @@ if __name__ == "__main__":
             })
         output_file = (
                 f"llama3_predictions/"
-                f"{relationship_type}_{k}shots_predictions_march18_{dataset_name}_swap_global_residual_then_4and9.csv"
+                f"{relationship_type}_{k}shots_predictions_{dataset_name}_{}.csv"
             )
         results_df.to_csv(output_file, index=False)
         print(f"Saved: {output_file}")
@@ -487,10 +247,9 @@ if __name__ == "__main__":
             "mape":      mape,
         })
 
-    # ── save summary ──
+    # save summary
     summary_df = pd.DataFrame(rows)
-    #summary_path = f"llama3_predictions/summary_{relationship_type}_outlier_Ushape_reverse_k{k}_data0012.csv"
-    summary_path = f"llama3_predictions/summary_{relationship_type}_march18_k{k}_swap_global_residual_then_4and9.csv"
+    summary_path = f"llama3_predictions/summary_{relationship_type}_k{k}_{}.csv"
     summary_df.to_csv(summary_path, index=False)
     logging.info(f"\nSummary saved to {summary_path}")
 
