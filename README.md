@@ -6,14 +6,17 @@ Our Paper: ["Robustness is Important: Limitations of LLMs for Data Fitting"](htt
 
 Below are key resources and documentation used for implementation.
 
-### GPT-4o-mini (Closed-weight)
+### Close-weight LLMs
+#### GPT-4o-mini
 - OpenAI API documentation: https://platform.openai.com/docs
 - Fine-tuning guide: [https://platform.openai.com/docs/guides/fine-tuning](https://platform.openai.com/docs/guides/supervised-fine-tuning)
 
-### LLaMA-3-8B-Instruct (Open-weight)
+### Open-weight LLMs
+### LLaMA-3-8B-Instruct
 - Inference code (Hugging Face): https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
 
-### TabPFN (Tabular Foundation Model)
+### Tabular Foundation Model
+#### TabPFN 
 - Official GitHub repository: [https://github.com/automl/TabPFN](https://github.com/PriorLabs/TabPFN)
 
 
