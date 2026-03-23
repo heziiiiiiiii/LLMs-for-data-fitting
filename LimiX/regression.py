@@ -30,25 +30,11 @@ for csv_path in files:
     X = df.drop(columns=["Y"])
     Y = df["Y"]
     X_train, X_test, Y_train, Y_test = split_data(X, Y)
+    X_train = X_train.iloc[:k, :]
+    Y_train = Y_train.iloc[:k]
     if "rowOrder" in relationship_type:
-        if k==10:
-            X_train = X_train.iloc[:10,:]
-            Y_train = Y_train[:10]
-            X_train = X_train.iloc[::-1]
-            Y_train = Y_train.iloc[::-1]
-        elif k==20:
-            X_train = X_train.iloc[:20,:]
-            Y_train = Y_train[:20]
-            X_train = X_train.iloc[::-1]
-            Y_train = Y_train.iloc[::-1]
-        elif k==500:
-            X_train = X_train.iloc[:500,:]
-            Y_train = Y_train[:500]
-            X_train = X_train.iloc[::-1]
-            Y_train = Y_train.iloc[::-1]
-        else:
-            X_train = X_train.iloc[::-1]
-            Y_train = Y_train.iloc[::-1]
+        X_train = X_train.iloc[::-1]
+        Y_train = Y_train.iloc[::-1]
 
     data_device = f'cuda:0'
     model_path = hf_hub_download(repo_id="stableai-org/LimiX-16M", filename="LimiX-16M.ckpt", local_dir=".")
