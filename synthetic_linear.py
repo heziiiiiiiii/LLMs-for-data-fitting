@@ -49,16 +49,6 @@ def simulate_data(n, p, dgp, distribution, digit, seed = 123456, beta=None, colu
     
     return data, col_names
 
-# actually range
-def generate_outliers(r, n, seed=12345):
-    outlier_values = []
-    for j in range(r):
-        num_digits = j + 1
-        min_value = 10**(num_digits - 1)
-        max_value = 10**num_digits - 1
-        outlier_values.append(np.random.randint(min_value, max_value + 1, size=n))
-    return outlier_values
-
 def format_decimal(x, digits):
     formatted_value = f"{x:.{digits}f}"
     return float(formatted_value)
@@ -73,7 +63,6 @@ def generate_combination(n,p, seed=12345):
     np.random.seed(seed)
     beta = np.random.uniform(0, 1, p)
     # [0.92961609 0.31637555 0.18391881 0.20456028 0.56772503 0.5955447 0.96451452 0.6531771  0.74890664 0.65356987]
-    # outlier_values = generate_outliers(4,n) #range
     
     for dgp in dgps:
         for distribution in distributions:
