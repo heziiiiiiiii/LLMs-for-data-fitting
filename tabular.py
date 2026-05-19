@@ -7,8 +7,6 @@ from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neural_network import MLPRegressor
-#import xgboost as xgb
-#import lightgbm as lgb
 
 seed = 123456
 np.random.seed(seed)
@@ -24,21 +22,22 @@ def init_model(model_name):
             param_grid = {"alpha": [0.01, 0.5, 1]}
         case "SVR":
             model = SVR()
-            param_grid = {"C": [0.1, 1, 10, 100],
+            param_grid = {"C": [0.01, 0.1, 1, 10, 100],
                           "epsilon": [0.1, 0.5, 1, 2],
-                          "kernel": ["linear", "rbf", "sigmoid"]}
+                          "kernel": ["linear", "rbf", "sigmoid"],
+                          "gamma": ["scale", "auto", 0.1, 1, 10]}
         case "RandomForest":
             model = RandomForestRegressor(random_state=seed)
             param_grid = {"n_estimators": [300, 500, 750, 1000, 1200],
                           "max_features": [1, 0.8, 0.5, 0.2],
                           "max_depth": [5, 10, 20, None],
-                          "max_samples": [1, 0.8, 0.5, 0.2]}
+                          "max_samples": [1, 0.9, 0.8, 0.5, 0.2]}
         case "KNN":
             model = KNeighborsRegressor()
             param_grid = {
                 "n_neighbors": [3, 5, 7, 9, 11],
                 "weights": ["distance", "uniform"],
-                "p": [1, 2]  # p=1 for Manhattan, p=2 for Euclidean
+                "p": [1, 2]  
             }
         case "MLP":
             model = MLPRegressor(max_iter=2000, early_stopping=True, random_state=seed)
@@ -91,9 +90,6 @@ if __name__ == "__main__":
         X_train = train_df.iloc[:, :-1]
         Y_train = train_df.iloc[:, -1]
 
-
-        
-
         range_Y = np.max(Y_train) - np.min(Y_train)
         if range_Y < 1e-3:
             r = np.mean(Y_train)
@@ -104,7 +100,6 @@ if __name__ == "__main__":
         prediction = {}
         
         for model_name in ["LinearRegression", "LassoRegression", "SVR", "RandomForest", "KNN", "MLP"]:
-        #for model_name in ['MLP']:
             model, param_grid = init_model(model_name)
             est, Y_pred, MAE, RMSE, MAPE, best_params = train_eval_model(model, param_grid, X_train, Y_train, X_test, Y_test)
 
@@ -115,10 +110,10 @@ if __name__ == "__main__":
             print(f"Model: {model_name}, MAE: {MAE}, RMSE: {RMSE}, MAPE: {MAPE}, Best Parameters: {best_params}")
             
         file_name = f"performance_data/{data_name}_performance.csv"
-        #prediction_file_name = f"performance_data/{data_name}_prediction_performance.csv"
+        prediction_file_name = f"performance_data/{data_name}_prediction_performance.csv"
         results_df.to_csv(file_name, index=True)
-        #prediction_results_df.to_csv(prediction_file_name, index=True)
-        #print(f"Best parameters: {est.best_params_}")
+        prediction_results_df.to_csv(prediction_file_name, index=True)
+        print(f"Best parameters: {est.best_params_}")
 
 
     
