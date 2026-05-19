@@ -34,12 +34,6 @@ def narrate_data(feature_names, feature_values, case):
             output += feature_names[i] + " " + str(feature_values[i]) + ", "
         return output
     
-    elif case == "space":
-        output = ''    
-        for i in range(len(feature_names)):
-            output += feature_names[i] + "  " + str(feature_values[i]) + ", "
-        return output
-    
     elif case == "json":
         data_dict = {feature_names[i]: feature_values[i] for i in range(len(feature_names))}
         return json.dumps(data_dict)
