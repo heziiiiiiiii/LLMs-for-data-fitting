@@ -23,25 +23,6 @@ def narrate_data(feature_names, feature_values):
         output += feature_names[i] + " " + str(feature_values[i]) + ", "
     return output
 
-'''
-def narrate_data(feature_names, feature_values, case):
-    if type(feature_values) == pd.Series:
-        feature_values = feature_values.values
-
-    if case == "base":
-        output = ''
-        for i in range(len(feature_names)):
-            output += feature_names[i] + " " + str(feature_values[i]) + ", "
-        return output.rstrip(", ") 
-
-    elif case == "json":
-        data_dict = {feature_names[i]: feature_values[i] for i in range(len(feature_names))}
-        return json.dumps(data_dict)
-
-    else:
-        raise ValueError("Invalid case.")
-'''
-
 def get_llama3_prediction_chat_template(data_name, X_train, Y_train, feature_names, new_data, tokenizer, model, k):
     """
     Alternative method using the tokenizer's built-in chat template
